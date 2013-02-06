@@ -16,7 +16,7 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 
 ### Methods Exposed by Module and Their Corresponding Wiki Page
 
-#### [sudo.Base](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Base)
+#### [sudo.Base](https://github.com/taskrabbit/sudojs/wiki/base)
 
 + addDelegate(object)
 + getDelegate(role)
@@ -25,7 +25,7 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 + construct(_arguments_)
 + base(_arguments_)
 
-####[sudo.Model](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Model)
+####[sudo.Model](https://github.com/taskrabbit/sudojs/wiki/model)
 
 + set(key, value)
 + setPath(path, value)
@@ -37,7 +37,7 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 + unsetPath(path)
 + unsets(array)
 
-#### [sudo.Container](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Container)
+#### [sudo.Container](https://github.com/taskrabbit/sudojs/wiki/container)
 
 + addChild(child, name)
 + getChild(_argument_)
@@ -46,7 +46,7 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 + removeFromParent()
 + send(_arguments_)
 
-#### [sudo.View](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-View)
+#### [sudo.View](https://github.com/taskrabbit/sudojs/wiki/view)
 
 + becomePremier
 + init
@@ -55,7 +55,7 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 + $(selector)
 
 
-#### [Observable extension](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-observable-extension)
+#### [Observable extension](https://github.com/taskrabbit/sudojs/wiki/observable-extension)
 
 + observe(fn)
 + observes(array)
@@ -65,12 +65,12 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 
 ### Modules Residing in 'Extras'
 
-#### [Bindable extension](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Bindable-Extension)
+#### [Bindable extension](https://github.com/taskrabbit/sudojs/wiki/bindable-extension)
 
 + setBinding()
 + setBindings()
 
-#### [sudo.DataView](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Dataview)
+#### [sudo.DataView](https://github.com/taskrabbit/sudojs/wiki/dataview)
 
 + addedToParent
 + bindEvents
