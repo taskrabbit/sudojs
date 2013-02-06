@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Sudo Spec Runner</title>
+
+  <link rel="shortcut icon" type="image/png" href="lib/jasmine/jasmine_favicon.png">
+
+  <link rel="stylesheet" type="text/css" href="lib/jasmine/jasmine.css">
+  <script type="text/javascript" src="lib/jasmine/jasmine.js"></script>
+  <script type="text/javascript" src="lib/jasmine/jasmine-html.js"></script>
+
+	<!--get this first-->
+
+	<!--[if lt IE 9 ]>
+		<script src="lib/es5-shim/es5-shim.js"></script>
+		<script src="lib/es5-shim/es5-sham.js"></script>
+	<![endif]-->
+
+	<script src="lib/jquery/jquery.js"></script>
+	<script src="build/debug/sudo-x.js"></script>
+
+  <!-- include spec files here... -->
+	<script src="base/spec/base.spec.js"></script>
+  <script src="model/spec/model.spec.js"></script>
+	<script src="model/spec/observable.spec.js"></script>
+	<script src="model/spec/persistable.spec.js"></script>
+	<script src="container/spec/container.spec.js"></script>
+	<script src="container/spec/send.spec.js"></script>
+	<script src="view/spec/view.spec.js"></script>
+	<script src="view/spec/bindable.spec.js"></script>
+	<script src="extras/viewController/spec/viewController.spec.js"></script>
+	<script src="extras/template/spec/template.spec.js"></script>
+	<script src="extras/dataview/spec/dataview.spec.js"></script>
+	<script src="extras/navigator/spec/navigator-hc.spec.js"></script>
+	<script src="extras/navigator/spec/navigator-ps.spec.js"></script>
+	<script src="extras/delegates/change/spec/change.spec.js"></script>
+	<script src="extras/delegates/data/spec/data.spec.js"></script>
+
+  <script type="text/javascript">
+    (function() {
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var trivialReporter = new jasmine.TrivialReporter();
+
+      jasmineEnv.addReporter(trivialReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+        return trivialReporter.specFilter(spec);
+      };
+
+      var currentWindowOnload = window.onload;
+
+      window.onload = function() {
+        if (currentWindowOnload) {
+          currentWindowOnload();
+        }
+        execJasmine();
+      };
+
+      function execJasmine() {
+        jasmineEnv.execute();
+      }
+
+    })();
+  </script>
+
+</head>
+
+<body>
+	<div id="testTarget" style="display: none"></div>
+</body>
+</html>
+
+
+
+

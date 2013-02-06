@@ -5,3 +5,126 @@
 High-level, "Model/View" (or "Presentation Model") style object oriented library made to aid you in your quest for Javascript
 awsomeness by assisting with such things as implementing inheritance patterns, handling data-mutation observation,
 establishing hierarchies of objects which have intrinsic knowledge of their responsibilies, and the making of sandwiches.
+
+## Documentaion
+
+- Specific `module` documentation and examples moved to [the wiki](https://github.com/taskrabbit/sudojs/wiki).
+- See the Docco annotated source code located in the docs directory.
+- Utilize the patterns and best practices docs in the [TechRabbit Blog](http://tech.taskrabbit.com/)
+
+## API Reference
+
+### Methods Exposed by Module and Their Corresponding Wiki Page
+
+#### [sudo.Base](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Base)
+
++ addDelegate(object)
++ getDelegate(role)
++ removeDelegate(role)
++ delegate(role, method)
++ construct(_arguments_)
++ base(_arguments_)
+
+####[sudo.Model](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Model)
+
++ set(key, value)
++ setPath(path, value)
++ sets(object)
++ get(key)
++ getPath(path)
++ gets(array)
++ unset(key)
++ unsetPath(path)
++ unsets(array)
+
+#### [sudo.Container](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Container)
+
++ addChild(child, name)
++ getChild(_argument_)
++ removeChild(_argument_)
++ bubble()
++ removeFromParent()
++ send(_arguments_)
+
+#### [sudo.View](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-View)
+
++ becomePremier
++ init
++ resignPremier
++ setEl(_argument_)
++ $(selector)
+
+
+#### [Observable extension](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-observable-extension)
+
++ observe(fn)
++ observes(array)
++ unobserve(fn)
++ unobserves(ary)
++ deliverChangeReords
+
+### Modules Residing in 'Extras'
+
+#### [Bindable extension](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Bindable-Extension)
+
++ setBinding()
++ setBindings()
+
+#### [sudo.DataView](https://github.com/taskrabbit/sudojs/wiki/Sudo.js-Dataview)
+
++ addedToParent
++ bindEvents
++ unbindEvents
++ render
+
+#### sudo.Template
+
++ template(string, data, scope)
+
+#### sudo.ViewController
+
++ instantiateChildren()
+
+## Test Suite
+
+The `specRunner.html` file in `root` runs each individual module's specs. Load it as a file in your browser of
+choice or, if you have Node.js installed you can `npm install node-static` then `node staticServer.js` which will
+serve the spec runner at `localhost:5678/specRunner.html`. This is useful, for me at least, for x-platform
+testing as I can just point virtual machines at the host. Note that individual spec files can be run from here as well, just
+adjust the path accordingly. The `sudo.Base` module for example could be run at `localhost:5678/base/specRunner.html`
+
+Also note that the `lib/jquery` folder in no way indicates a dependency on _that_ particular version of `jQuery`. It
+is there simply so I can run tests offline (which I usually write while riding Caltrain [no wifi]).
+
+## Rails Gem
+
+A rather opinionated gem is available [here](https://github.com/robrobbins/sudojs-rails). More than just making sudo builds
+(sudo and sudo-x) available for your rails apps it enforces a rather unique workflow. More info there...
+
+## Node.js Module
+
+A simplified version of `sudo.js` is available for Node:
+		
+		npm install sudoclass
+
+It provides `sudo.js` style inheritance, key-value coding (the `sudo.js Base Object`), delegation, and data-mutation-observation via
+the `Observable` extension. The `sudo.js` build tool is built with this.
+
+## Build Tool
+
+The latest concatonated (but unminified) version of `sudo.js` (and `sudo-x.js` [sudo.js with added stuff]) is always
+located in `build/debug`. If you are making changes, adding new modules, or creating a custom build and need the `debug/`
+files to be rebuilt `cd` into the `build/lib` directory and run:
+
+		node run.js [0.x.x] [sudo.html] [sudo-x.html] [foo.html] ...
+
+Note that the `foo.html` above would represent an HTML configuration file you created for a custom build of sudo.js.
+
+You will need `Node.js` installed as well as the `sudoclass` module mentioned above. The arguments that follow the invocation of
+`run.js` are a _version number_ and the html files that the build tool uses to load the 'modules'. If you are adding new 'modules'
+be sure to add them to sudo.html (and/or the sudo-x.html) config file or they will not be added to the concatonated `debug/` file(s).
+
+### Extras
+
+The `-x` debug version, `build/debug/sudo-x.js`, simply contains the 'modules' located in the `extras` directory that have been
+tested and documented. They do not belong in core but provide added functionality that some may find useful.
