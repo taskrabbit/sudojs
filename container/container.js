@@ -81,6 +81,8 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	delete this.childNames[c.name];
 	// child is now an `orphan`
 	delete c.parent;
+  delete c.index;
+  delete c.name;
 	this._indexChildren_(i);
 	return this;
 };
@@ -122,7 +124,7 @@ sudo.Container.prototype.send = function send(/*args*/) {
 			args[0].sendMethod || void 0;
 	}
 	// target is either specified or my parent
-	targ = d && d.sendTarget || this.parent;
+	targ = d && d.sendTarget || this.bubble();
 	// obvious chance for errors here, don't be dumb
 	fn = targ[meth];
 	while(!fn && (targ = targ.bubble())) {
