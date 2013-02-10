@@ -418,6 +418,8 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	delete this.childNames[c.name];
 	// child is now an `orphan`
 	delete c.parent;
+  delete c.index;
+  delete c.name;
 	this._indexChildren_(i);
 	return this;
 };
@@ -459,7 +461,7 @@ sudo.Container.prototype.send = function send(/*args*/) {
 			args[0].sendMethod || void 0;
 	}
 	// target is either specified or my parent
-	targ = d && d.sendTarget || this.parent;
+	targ = d && d.sendTarget || this.bubble();
 	// obvious chance for errors here, don't be dumb
 	fn = targ[meth];
 	while(!fn && (targ = targ.bubble())) {
@@ -810,7 +812,7 @@ sudo.template = function template(str, data, scope) {
 	template.source = 'function(' + scope + '){\n' + source + '}';
 	return template;
 };
-// ##Dataview Class Object
+// ##DataView Class Object
 
 // Create an instance of an Object, inheriting from sudo.View that:
 // 1. Expects to have a template located in its internal data Store accessible via `this.get('template')`.
@@ -824,7 +826,7 @@ sudo.template = function template(str, data, scope) {
 //		extension object
 //
 //`constructor`
-sudo.Dataview = function(el, data) {
+sudo.DataView = function(el, data) {
 	var d = data || {}, t;
 	sudo.View.call(this, el, d);
 	// implements the listener extension
@@ -841,17 +843,15 @@ sudo.Dataview = function(el, data) {
 	if((t = d.template)) {
 		if(typeof t === 'string') this.model.data.template = sudo.template(t);
 	}
-	if(this.role === 'dataview') {
-		this.bindEvents();
-		this.init();
-	}
+	this.bindEvents();
+	if(this.role === 'dataview') this.init();
 };
 // `private`
-sudo.inherit(sudo.View, sudo.Dataview);
+sudo.inherit(sudo.View, sudo.DataView);
 // ###addedToParent
 // Container's will check for the presence of this method and call it if it is present
 // after adding a child - essentially, this will auto render the dataview when added to a parent
-sudo.Dataview.prototype.addedToParent = function() {
+sudo.DataView.prototype.addedToParent = function(parent) {
 	return this.render();
 };
 // ###removeFromParent
@@ -859,7 +859,7 @@ sudo.Dataview.prototype.addedToParent = function() {
 // Overrides `sudo.View.removeFromParent` to actually remove the DOM as well
 //
 // `returns` {Object} `this`
-sudo.Dataview.prototype.removeFromParent = function removeFromParent() {
+sudo.DataView.prototype.removeFromParent = function removeFromParent() {
 	this.parent.removeChild(this);
 	this.$el.remove();
 	return this;
@@ -875,10 +875,11 @@ sudo.Dataview.prototype.removeFromParent = function removeFromParent() {
 // `param` {object} `change` dataviews may be observing their model if `autoRender: true`
 //
 // `returns` {Object} `this`
-sudo.Dataview.prototype.render = function render(change) {
+sudo.DataView.prototype.render = function render(change) {
+	var d;
 	// return early if a `blacklisted` key is set to my model
 	if(change && this.autoRenderBlacklist[change.name]) return this;
-	var d = this.model.data;
+	d = this.model.data;
 	this.$el.html(d.template(d));
 	if(d.renderTarget) {
 		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
@@ -887,7 +888,7 @@ sudo.Dataview.prototype.render = function render(change) {
 	return this;
 };
 // `private`
-sudo.Dataview.prototype.role = 'dataview';
+sudo.DataView.prototype.role = 'dataview';
 // ##Navigator Class Object
 
 // Abstracts location and history events, parsing their information into a 
@@ -923,12 +924,22 @@ sudo.Navigator.prototype.getFragment = function getFragment(fragment) {
 	}
 	return decodeURIComponent(fragment.replace(this.leadingStripper, ''));
 };
+// ###getHash
+// Check either the passed in fragment, or the full location.href
+// for a `hash` value
+//
+// `param` {string} `fragment` Optional fragment to check
 // `returns` {String} the normalized current `hash`
 sudo.Navigator.prototype.getHash = function getHash(fragment) {
 	fragment || (fragment = window.location.href);
 	var match = fragment.match(/#(.*)$/);
 	return match ? match[1] : '';
 };
+// ###getSearch
+// Check either the passed in fragment, or the full location.href
+// for a `search` value
+//
+// `param` {string} `fragment` Optional fragment to check
 // `returns` {String} the normalized current `search`
 sudo.Navigator.prototype.getSearch = function getSearch(fragment) {
 	fragment || (fragment = window.location.href);
@@ -1008,7 +1019,9 @@ sudo.Navigator.prototype.setData = function setData() {
 };
 // ###start
 // Gather the necessary information about the current environment and 
-// bind to either (push|pop)state or hashchange
+// bind to either (push|pop)state or hashchange.
+// Also, if given an imcorrect URL for the current environment (hashchange 
+// vs pushState) normalize it and set accordingly.
 //
 // `returns` {object} `this`
 sudo.Navigator.prototype.start = function start() {
@@ -1114,13 +1127,13 @@ sudo.extensions.observable = {
 	// Allow an array of callbacks to be registered as changeRecord recipients
 	//
 	// `param` {Array} ary
-	// `returns` {Object} `this`
+	// `returns` {Array} the Array passed in to observe
 	observes: function observes(ary) {
 		var i;
 		for(i = 0; i < ary.length; i++) {
 			this.observe(ary[i]);
 		}
-		return this;
+		return ary;
 	},
 	// ###set
 	// Overrides sudo.Base.set to check for observers
@@ -1529,7 +1542,7 @@ sudo.extensions.persistable = {
 	// ###create 
 	//
 	// Save this model on the server. If a subset of this model's attributes
-	// has not been stated (ajax:{data:{...}}) send all of the model's data.
+	// have not been stated (ajax:{data:{...}}) send all of the model's data.
 	// Anticipate that the server response will send back the 
 	// state of the model on the server and set it here (via a success callback).
 	//
@@ -1539,8 +1552,8 @@ sudo.extensions.persistable = {
 		return this._sendData_('POST', params);
 	},
 	// ###destroy
-	//
-	// (because `delete` is reserved)
+  //
+	// Delete this model on the server
 	//
 	// `param` {object} `params` Optional hash of options for the XHR
 	// `returns` {object} jqXhr
@@ -1716,7 +1729,7 @@ sudo.delegates.Data.prototype.filter = function(obj) {
 // `private`
 sudo.delegates.Data.prototype.role = 'data';
 
-sudo.version = "0.9.2";
+sudo.version = "0.9.3";
 window.sudo = sudo;
 if(typeof window._ === "undefined") window._ = sudo;
 }).call(this, this);

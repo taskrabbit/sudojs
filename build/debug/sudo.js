@@ -418,6 +418,8 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	delete this.childNames[c.name];
 	// child is now an `orphan`
 	delete c.parent;
+  delete c.index;
+  delete c.name;
 	this._indexChildren_(i);
 	return this;
 };
@@ -459,7 +461,7 @@ sudo.Container.prototype.send = function send(/*args*/) {
 			args[0].sendMethod || void 0;
 	}
 	// target is either specified or my parent
-	targ = d && d.sendTarget || this.parent;
+	targ = d && d.sendTarget || this.bubble();
 	// obvious chance for errors here, don't be dumb
 	fn = targ[meth];
 	while(!fn && (targ = targ.bubble())) {
@@ -639,13 +641,13 @@ sudo.extensions.observable = {
 	// Allow an array of callbacks to be registered as changeRecord recipients
 	//
 	// `param` {Array} ary
-	// `returns` {Object} `this`
+	// `returns` {Array} the Array passed in to observe
 	observes: function observes(ary) {
 		var i;
 		for(i = 0; i < ary.length; i++) {
 			this.observe(ary[i]);
 		}
-		return this;
+		return ary;
 	},
 	// ###set
 	// Overrides sudo.Base.set to check for observers
@@ -809,7 +811,7 @@ sudo.extensions.observable = {
 		return this.deliverChangeRecords();	
 	}
 };
-sudo.version = "0.9.2";
+sudo.version = "0.9.3";
 window.sudo = sudo;
 if(typeof window._ === "undefined") window._ = sudo;
 }).call(this, this);

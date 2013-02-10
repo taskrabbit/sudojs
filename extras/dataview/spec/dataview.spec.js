@@ -4,7 +4,7 @@ describe('sudo.js Dataview Object', function() {
 		this.construct(el, data);
 	};
 
-	DV.prototype = Object.create(sudo.Dataview.prototype);
+	DV.prototype = Object.create(sudo.DataView.prototype);
 
 	DV.prototype.buttonClicked = function(e) {
 		console.log('my button ' + e.target.className + ' wuz clicked');
