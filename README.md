@@ -22,8 +22,8 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 + getDelegate(role)
 + removeDelegate(role)
 + delegate(role, method)
-+ construct(_arguments_)
-+ base(_arguments_)
++ construct([el][, data])
++ base(methodName[, args...])
 
 ####[Model](https://github.com/taskrabbit/sudojs/wiki/model)
 
@@ -67,28 +67,34 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 
 #### [listener extension](https://github.com/taskrabbit/sudojs/wiki/listener-extension)
 
-+ bindEvents()
-+ unbindEvents()
++ bindEvents
++ unbindEvents
+
+#### [persistable extension](https://github.com/taskrabbit/sudojs/wiki/persistable-extension)
+
++ create([options])
++ read([options])
++ update([options])
++ destroy([options])
++ save([options])
+
+#### [DataView](https://github.com/taskrabbit/sudojs/wiki/dataview)
+
++ addedToParent(parent)
++ render([change])
+
+#### [template](https://github.com/taskrabbit/sudojs/wiki/template)
+
++ template(string, data, scope)
+
+#### [ViewController](https://github.com/taskrabbit/sudojs/wiki/viewcontroller)
+
++ instantiateChildren()
 
 #### [bindable extension](https://github.com/taskrabbit/sudojs/wiki/bindable-extension)
 
 + setBinding()
 + setBindings()
-
-#### [DataView](https://github.com/taskrabbit/sudojs/wiki/dataview)
-
-+ addedToParent
-+ bindEvents
-+ unbindEvents
-+ render
-
-#### sudo.Template
-
-+ template(string, data, scope)
-
-#### sudo.ViewController
-
-+ instantiateChildren()
 
 ## Test Suite
 

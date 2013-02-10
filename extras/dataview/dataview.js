@@ -1,4 +1,4 @@
-// ##Dataview Class Object
+// ##DataView Class Object
 
 // Create an instance of an Object, inheriting from sudo.View that:
 // 1. Expects to have a template located in its internal data Store accessible via `this.get('template')`.
@@ -12,7 +12,7 @@
 //		extension object
 //
 //`constructor`
-sudo.Dataview = function(el, data) {
+sudo.DataView = function(el, data) {
 	var d = data || {}, t;
 	sudo.View.call(this, el, d);
 	// implements the listener extension
@@ -29,17 +29,15 @@ sudo.Dataview = function(el, data) {
 	if((t = d.template)) {
 		if(typeof t === 'string') this.model.data.template = sudo.template(t);
 	}
-	if(this.role === 'dataview') {
-		this.bindEvents();
-		this.init();
-	}
+	this.bindEvents();
+	if(this.role === 'dataview') this.init();
 };
 // `private`
-sudo.inherit(sudo.View, sudo.Dataview);
+sudo.inherit(sudo.View, sudo.DataView);
 // ###addedToParent
 // Container's will check for the presence of this method and call it if it is present
 // after adding a child - essentially, this will auto render the dataview when added to a parent
-sudo.Dataview.prototype.addedToParent = function() {
+sudo.DataView.prototype.addedToParent = function(parent) {
 	return this.render();
 };
 // ###removeFromParent
@@ -47,7 +45,7 @@ sudo.Dataview.prototype.addedToParent = function() {
 // Overrides `sudo.View.removeFromParent` to actually remove the DOM as well
 //
 // `returns` {Object} `this`
-sudo.Dataview.prototype.removeFromParent = function removeFromParent() {
+sudo.DataView.prototype.removeFromParent = function removeFromParent() {
 	this.parent.removeChild(this);
 	this.$el.remove();
 	return this;
@@ -63,10 +61,11 @@ sudo.Dataview.prototype.removeFromParent = function removeFromParent() {
 // `param` {object} `change` dataviews may be observing their model if `autoRender: true`
 //
 // `returns` {Object} `this`
-sudo.Dataview.prototype.render = function render(change) {
+sudo.DataView.prototype.render = function render(change) {
+	var d;
 	// return early if a `blacklisted` key is set to my model
 	if(change && this.autoRenderBlacklist[change.name]) return this;
-	var d = this.model.data;
+	d = this.model.data;
 	this.$el.html(d.template(d));
 	if(d.renderTarget) {
 		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
@@ -75,4 +74,4 @@ sudo.Dataview.prototype.render = function render(change) {
 	return this;
 };
 // `private`
-sudo.Dataview.prototype.role = 'dataview';
+sudo.DataView.prototype.role = 'dataview';

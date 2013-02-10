@@ -54,13 +54,13 @@ sudo.extensions.observable = {
 	// Allow an array of callbacks to be registered as changeRecord recipients
 	//
 	// `param` {Array} ary
-	// `returns` {Object} `this`
+	// `returns` {Array} the Array passed in to observe
 	observes: function observes(ary) {
 		var i;
 		for(i = 0; i < ary.length; i++) {
 			this.observe(ary[i]);
 		}
-		return this;
+		return ary;
 	},
 	// ###set
 	// Overrides sudo.Base.set to check for observers
