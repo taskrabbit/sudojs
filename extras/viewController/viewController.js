@@ -70,8 +70,8 @@ sudo.ViewController.prototype.doMapping = function() {
 // Helper for instantiateChildren
 // `private`
 sudo.ViewController.prototype._handleObserve_ = function _handleObserve_(obs, c) {
-	var obj = obs.object ? this._objectForPath_(obs.object) : this;
-		obj.observe(c[obs.cb].bind(c));
+	var obj = obs.object ? this._objectForPath_(obs.object) : this.model;
+	obj.observe(c[obs.cb].bind(c));
 };
 // ###instantiateChildren
 // instantiate the children described in the passed in array or the `descriptors` array

@@ -40,7 +40,8 @@ describe('Sudo ViewController', function() {
 	});
 
 	afterEach(function(){
-		model = void 0;
+		modelOne = void 0;
+		modelTwo = void 0;
 		VC = void 0;
 		vc = void 0;
 	});
