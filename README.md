@@ -69,7 +69,7 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 
 + filter
 
-####[Data Delegate](https://github.com/taskrabbit/sudojs/wiki/change-delegate)
+####[Data Delegate](https://github.com/taskrabbit/sudojs/wiki/data-delegate)
 
 + filter
 
