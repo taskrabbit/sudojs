@@ -65,6 +65,14 @@ establishing hierarchies of objects which have intrinsic knowledge of their resp
 
 ### Modules Residing in 'Extras'
 
+####[Change Delegate](https://github.com/taskrabbit/sudojs/wiki/change-delegate)
+
++ filter
+
+####[Data Delegate](https://github.com/taskrabbit/sudojs/wiki/change-delegate)
+
++ filter
+
 #### [listener extension](https://github.com/taskrabbit/sudojs/wiki/listener-extension)
 
 + bindEvents
@@ -115,8 +123,8 @@ A rather opinionated gem is available [here](https://github.com/robrobbins/sudoj
 ## Node.js Module
 
 A simplified version of `sudo.js` is available for Node:
-		
-		npm install sudoclass
+    
+    npm install sudoclass
 
 It provides `sudo.js` style inheritance, key-value coding (the `sudo.js Base Object`), delegation, and data-mutation-observation via
 the `Observable` extension. The `sudo.js` build tool is built with this.
@@ -127,7 +135,7 @@ The latest concatonated (but unminified) version of `sudo.js` (and `sudo-x.js` [
 located in `build/debug`. If you are making changes, adding new modules, or creating a custom build and need the `debug/`
 files to be rebuilt `cd` into the `build/lib` directory and run:
 
-		node run.js [0.x.x] [sudo.html] [sudo-x.html] [foo.html] ...
+    node run.js [0.x.x] [sudo.html] [sudo-x.html] [foo.html] ...
 
 Note that the `foo.html` above would represent an HTML configuration file you created for a custom build of sudo.js.
 
