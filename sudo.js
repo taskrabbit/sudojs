@@ -5,6 +5,22 @@ var sudo = {
 	//
 	// `namespace`
 	delegates: {},
+  // ###extend
+	// Copy the (non-inherited) key:value pairs from <n> source objects to a single target object.
+	//
+	// `params` {objects} A target object followed by <n> source objects
+	extend: function extend() {
+		var args = Array.prototype.slice.call(arguments),
+			targ = args.shift(), i, obj, keys;
+		// iterate over each passed in obj remaining
+		for(obj; args.length && (obj = args.shift());) {
+			keys = Object.keys(obj);
+			for(i = 0; i < keys.length; i++) {
+				targ[keys[i]] = obj[keys[i]];
+			}
+		}
+		return targ;
+	},
 	// The sudo.extensions namespace holds the objects that are stand alone `modules` which
 	// can be `implemented` (mixed-in) in sudo Class Objects
 	//
@@ -13,7 +29,7 @@ var sudo = {
 	// ###getPath
 	// Extract a value located at `path` relative to the passed in object
 	//
-	// `param` {String} `path`. The key in the form of a dot-delimited path.
+	// `param` {string} `path`. The key in the form of a dot-delimited path.
 	// `param` {object} `obj`. An object literal to operate on.
 	//
 	// `returns` {*|undefined}. The value at keypath or undefined if not found.
@@ -58,6 +74,10 @@ var sudo = {
 			this.setPath(path, {}, window);
 		}
 	},
+  // ###noop
+	// A blank function used as a placeholder for virtual methods meant to be overridden
+	// by subclassing
+	noop: function(){},
 	// ###premier
 	// The premier object takes precedence over all others so define it at the topmost level.
 	//

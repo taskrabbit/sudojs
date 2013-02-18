@@ -7,12 +7,10 @@
 // based on the `tagName` (`div` by default). Specify `className`, `id` (or other attributes if desired)
 // as an (optional) `attributes` object literal on the `data` arg.
 //
-// The view object uses jquery for dom manipulation
-// and event delegation etc... A jquerified `this` reference is located
-// at `this.$el` and `this.$` scopes queries to this objects `el`, i.e it's
-// a shortcut for `this.$el.find(selector)`
+// The view object uses `querySelector` for dom manipulation
+// and native event delegation etc...
 //
-// `param` {string|element|jQuery} `el`. Otional el for the View instance.
+// `param` {string|element} `el`. Otional el for the View instance.
 // `param` {Object} `data`. Optional data object-literal which becomes the initial state
 // of a new model located at `this.model`. Also can be a reference to an existing sudo.Model instance
 //
@@ -50,17 +48,14 @@ sudo.View.prototype.becomePremier = function becomePremier() {
 // ###init
 // A 'contruction-time' hook to call for further initialization needs in 
 // View objects (and their subclasses). A noop by default child classes should override.
-sudo.View.prototype.init = $.noop;
-// the el needs to be normalized before use
+sudo.View.prototype.init = sudo.noop;
+// ###_normalizedEl_
+// Pass a string selector through querySelector, returning the result or
+// simply return a passed in DOM element
+//
 // `private`
 sudo.View.prototype._normalizedEl_ = function _normalizedEl_(el) {
-	if(typeof el === 'string') {
-		return $(el);
-	} else {
-		// Passed an already `jquerified` Element?
-		// It will have a length of 1 if so.
-		return el.length ? el : $(el);
-	}	
+	return typeof el === 'string' ? document.querySelector(el) : el;
 };
 // ### resignPremier
 // Resign premier status
@@ -83,29 +78,44 @@ sudo.View.prototype.resignPremier = function resignPremier(cb) {
 sudo.View.prototype.role = 'view';
 // ###setEl
 // A view must have an element, set that here.
-// Stores a jquerified object as `this.$el` the raw
-// node is always then available as `this.$el[0]`.
+// Stores a DOM object as `this.el`
 //
 // `param` {string=|element} `el`
 // `returns` {Object} `this`
 sudo.View.prototype.setEl = function setEl(el) {
-	var d = this.model && this.model.data, a, t;
+	var d = this.model && this.model.data, a, k, i, t;
 	if(!el) {
 		// normalize any relevant data
 		t = d ? d.tagName || 'div': 'div';
-		this.$el = $(document.createElement(t));
-		if(d && (a = d.attributes)) this.$el.attr(a);
+		this.el = document.createElement(t);
+		// TODO this
+		if(d && (a = d.attributes)) {
+			// iterate and set the attributes
+			k = Object.keys(a);
+			for(i = 0; i < k.length; i++) {
+				this.el.setAttribute(k[i], a[k[i]]);
+			}
+		}
 	} else {
-		this.$el = this._normalizedEl_(el);
+		this.el = this._normalizedEl_(el);
 	}
 	return this;
 };
 // ###this.$
 // Return a single Element matching `sel` scoped to this View's el.
-// This is an alias to `this.$el.find(sel)`.
+// This is an alias to `this.el.querySelector(sel)`.
 //
-// `param` {string} `sel`. A jQuery compatible selector
-// `returns` {jQuery} A 'jquerified' result matching the selector
+// `param` {string} `sel`. A querySelector compatible selector
+// `returns` {Element | undefined} A result matching the selector (or undefined if not)
 sudo.View.prototype.$ = function(sel) {
-	return this.$el.find(sel);
+	return this.el.querySelector(sel);
+};
+// ###this.$$
+// Return multiple Elements (a NodeList) matching `sel` scoped to this View's el.
+// This is an alias to `this.el.querySelectorAll(sel)`.
+//
+// `param` {string} `sel`. A querySelectorAll compatible selector
+// `returns` {Elements | undefined} Results matching the selector (or undefined if not)
+sudo.View.prototype.$$ = function(sel) {
+	return this.el.querySelectorAll(sel);
 };

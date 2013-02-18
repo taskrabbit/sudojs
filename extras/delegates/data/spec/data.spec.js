@@ -1,7 +1,7 @@
 describe('Sudo Data Delegate', function() {
 
 	beforeEach(function() {
-		model = $.extend(new _.Model(), _.extensions.observable);
+		model = _.extend(new _.Model(), _.extensions.observable);
 		view = new _.View();
 		view.tellFollowers = function() {};
 		view.thinkingAbout = function() {};

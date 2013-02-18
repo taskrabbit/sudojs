@@ -148,9 +148,9 @@ sudo.Navigator.prototype.start = function start() {
 	this.urlChanged();
 	// monitor URL changes via popState or hashchange
 	if (this.isPushState) {
-		$(window).on('popstate', this.handleChange.bind(this));
+		window.addEventListener('popstate', this.handleChange.bind(this));
 	} else if (this.isHashChange) {
-		$(window).on('hashchange', this.handleChange.bind(this));
+		window.addEventListener('hashchange', this.handleChange.bind(this));
 	} else return;
 	// Does the current URL need to changed? (hashchange vs popstate)
 	atRoot = window.location.pathname.replace(/[^\/]$/, '$&/') === this.data['root'];
