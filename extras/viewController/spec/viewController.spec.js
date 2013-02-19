@@ -1,8 +1,8 @@
 describe('Sudo ViewController', function() {
 
 	beforeEach(function() {
-		modelOne = $.extend(new _.Model(), _.extensions.observable);
-		modelTwo = $.extend(new _.Model(), _.extensions.observable);
+		modelOne = _.extend(new _.Model(), _.extensions.observable);
+		modelTwo = _.extend(new _.Model(), _.extensions.observable);
 
 		VC = function(el, data) {
 			this.construct(el, data);

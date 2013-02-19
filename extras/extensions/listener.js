@@ -45,11 +45,16 @@ sudo.extensions.listener = {
 	// `private`
 	_handleEvent_: function _handleEvent_(e, which) {
 		if(which) {
-			this.$el.on(e.name, e.sel, e.data, typeof e.fn === 'string' ? this[e.fn].bind(this) : e.fn);
+			this.el.addEventListener(e.name, typeof e.fn === 'string' ? this[e.fn].bind(this) : e.fn, e.capture);
 		} else {
 			// do not re-bind the fn going to off otherwise the unbind will fail
-			this.$el.off(e.name, e.sel);
+			this.el.removeEventListener();
 		}
+	},
+	// ### _normalizeListener_
+	// 
+	_normalizeListener_: function _normalizeListener_(e) {
+		var tm
 	},
 	// ###unbindEvents
 	// Unbind the events in the data store from this object's $el

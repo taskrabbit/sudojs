@@ -12,11 +12,6 @@
 // in its optional data argument when instantiated. The ViewController will then iterate over those 
 // and instantiate them, adding them as children as it goes (also setting up any stated observers)
 //
-// 2. ViewControllers also abstract away connecting UJS style events by allowing the developer to
-// pass in the name(s) of any desired UJS events to observe: `ujsEvent: ajax:success` for example, 
-// and expect that a method named onAjaxSuccess, if present on the ViewController, will be called
-// with the arguments returned by the UJS plugin*
-//
 // `param` {string|element} `el`. Otional el for the View instance.
 // `param` {object} `data`. Optional data object.
 //
@@ -25,19 +20,7 @@
 // `constructor`
 sudo.ViewController = function(el, data) {
 	sudo.View.call(this, el, data);
-	// map the names of events to methods we expect to proxy to
-	this.eventMap = {
-		'ajax:before': 'onAjaxBefore',
-		'ajax:beforeSend': 'onAjaxBeforeSend',
-		'ajax:success': 'onAjaxSuccess',
-		'ajax:error': 'onAjaxError',
-		'ajax:complete': 'onAjaxComplete',
-		'ajax:aborted:required': 'onAjaxAbortedRequired',
-		'ajax:aborted:file': 'onAjaxAbortedFile'
-	};
-	// can be called again if mapping changes... 
 	if(data) {
-		this.doMapping();
 		if('descriptor' in data) this.instantiateChildren([data.descriptor]);
 		else if('descriptors' in data) this.instantiateChildren();
 	}
@@ -46,26 +29,6 @@ sudo.ViewController = function(el, data) {
 // ViewController inherits from View.
 // `private`
 sudo.inherit(sudo.View, sudo.ViewController);
-// ###doMapping
-//
-// assign the proxy mapping for events. This can be called at any time
-// if the listened for events change
-//
-// `returns` {Object} `this`
-sudo.ViewController.prototype.doMapping = function() {
-	// either a single event or an array of them
-	var i,
-		toMap = this.model.data.ujsEvent || this.model.data.ujsEvents;
-	if(toMap) {
-		if(typeof toMap === 'string') this._mapEvent_(toMap);
-		else {
-			for(i = 0; i < toMap.length; i++) {
-				this._mapEvent_(toMap[i]);
-			}
-		}
-	}
-	return this;
-};
 // ###_handleObserve_
 // Helper for instantiateChildren
 // `private`
@@ -96,13 +59,6 @@ sudo.ViewController.prototype.instantiateChildren = function instantiateChildren
 	}
 	return this;
 };
-// ###_mapEvent_
-// Maps the ajax:event names to methods
-// `private`
-sudo.ViewController.prototype._mapEvent_ = function _mapEvent_(name) {
-		// because the signatures vary we need specific methods
-		this.$el.on(name, this[this.eventMap[name]].bind(this));
-};
 // ###_objectForPath_
 // The objects used for callbacks and connections need to be
 // looked-up via a key-path like address as they likely will not exist
@@ -111,14 +67,5 @@ sudo.ViewController.prototype._mapEvent_ = function _mapEvent_(name) {
 sudo.ViewController.prototype._objectForPath_ = function _objectForPath_(path) {
 	return sudo.getPath(path, window);
 };
-// Virtual methods to override in your child classes for
-// any events you chose to listen for
-sudo.ViewController.prototype.onAjaxAbortedFile = $.noop;
-sudo.ViewController.prototype.onAjaxAbortedRequired = $.noop;
-sudo.ViewController.prototype.onAjaxBefore = $.noop;
-sudo.ViewController.prototype.onAjaxBeforeSend = $.noop;
-sudo.ViewController.prototype.onAjaxComplete = $.noop;
-sudo.ViewController.prototype.onAjaxSuccess = $.noop;
-sudo.ViewController.prototype.onAjaxError = $.noop;
 // `private`
 sudo.ViewController.prototype.role = 'viewController';
