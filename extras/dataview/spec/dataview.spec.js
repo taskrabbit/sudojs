@@ -29,7 +29,7 @@ describe('sudo.js Dataview Object', function() {
 	});
 
 	it('exists but without the inner content yet', function() {
-		expect(dv.$el.html()).toBeFalsy();
+		expect(dv.el.innerHTML).toBeFalsy();
 	});
 
 	it('renders correctly', function() {
@@ -40,10 +40,10 @@ describe('sudo.js Dataview Object', function() {
 			buttonTwoValue: "I bet you're gay"
 		});
 
-		expect(dv.$('#one span').text()).toBe("Let's not bicker and argue over who killed who.");
-		expect(dv.$('#one button').text()).toBe("I'm not worthy");
-		expect(dv.$('#two span').text()).toBe("You were in terrible peril.");
-		expect(dv.$('#two button').text()).toBe("I bet you're gay");
+		expect(dv.$('#one span').textContent).toBe("Let's not bicker and argue over who killed who.");
+		expect(dv.$('#one button').textContent).toBe("I'm not worthy");
+		expect(dv.$('#two span').textContent).toBe("You were in terrible peril.");
+		expect(dv.$('#two button').textContent).toBe("I bet you're gay");
 	});
 
 	it('deleted the renderTarget', function() {
@@ -51,26 +51,38 @@ describe('sudo.js Dataview Object', function() {
 	});
 
 	it('has not yet bound the click event', function() {
+		var evt = document.createEvent('MouseEvent');
+		evt.initMouseEvent("click", true, true, window,
+			0, 0, 0, 0, 0, false, false, false, false, 0, null);
 		var spy = spyOn(dv, 'buttonClicked');
-		dv.$('button').trigger('click');
-		expect(spy.callCount).toBe(0);	
+		dv.$('button').dispatchEvent(evt);
+		expect(spy.callCount).toBe(0);
 	});
 
 	it('has delegated the event, maintaining it even when html is refreshed', function() {
+		var ary, evt = document.createEvent('MouseEvent');
+		evt.initMouseEvent("click", true, true, window,
+			0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
 		var spy = spyOn(dv, 'buttonClicked').andCallThrough();
 		// set and bind after spy declaration or jasmine won't see it
 		dv.model.set('event', {
-			name: 'click',
-			sel: 'button',
-			fn: 'buttonClicked'
+			click: {
+				button: 'buttonClicked'
+			}
 		});
 		dv.bindEvents();
+		
+		ary = Array.prototype.slice.call(dv.$$('button'));
 
-		dv.$('button').trigger('click');
+		ary.forEach(function(el) {
+			el.dispatchEvent(evt);
+		});
+
 		expect(spy.callCount).toBe(2);
 
-		dv.$el.empty();
-		expect(dv.$el.html()).toBeFalsy();
+		dv.el.innerHTML = '';
+		expect(dv.el.innerHTML).toBeFalsy();
 
 		dv.model.sets({
 			sayingOne:"You've got no arms left.",
@@ -79,33 +91,45 @@ describe('sudo.js Dataview Object', function() {
 			buttonTwoValue: "It's just a flesh wound"
 		});
 
-		expect(dv.$('#one span').text()).toBe("You've got no arms left.");
-		expect(dv.$('#one button').text()).toBe("Yes I have");
-		expect(dv.$('#two span').text()).toBe("Look!");
-		expect(dv.$('#two button').text()).toBe("It's just a flesh wound");
+		expect(dv.$('#one span').textContent).toBe("You've got no arms left.");
+		expect(dv.$('#one button').textContent).toBe("Yes I have");
+		expect(dv.$('#two span').textContent).toBe("Look!");
+		expect(dv.$('#two button').textContent).toBe("It's just a flesh wound");
 
-		dv.$('button').trigger('click');
+		ary = Array.prototype.slice.call(dv.$$('button'));
+
+		ary.forEach(function(el) {
+			el.dispatchEvent(evt);
+		});
+
 		expect(spy.callCount).toBe(4);
 
 		// can unbind events as well
 		dv.unbindEvents();
-		dv.$('button').trigger('click');
+
+		ary.forEach(function(el) {
+			el.dispatchEvent(evt);
+		});
+
 		expect(spy.callCount).toBe(4);
 	});
 
 	it('can remove itself from a parent ViewController', function() {
-		// reset dv	
-		dv.$el.empty().remove();
-		expect($('#testTarget').html()).toBeFalsy();
+		// reset dv
+		var t = document.getElementById('testTarget');
+		t.innerHTML = '';
+		dv.el.innerHTML = '';
 
-		var vc = new sudo.ViewController('#testTarget');
+		expect(t.innerHTML).toBeFalsy();
 
-		dv.model.set('renderTarget', vc.$el);
+		var vc = new sudo.ViewController(t);
+
+		dv.model.set('renderTarget', vc.el);
 		vc.addChild(dv);
-		expect($('#testTarget').html()).toBeTruthy();
+		expect(vc.el.innerHTML).toBeTruthy();
 
 		dv.removeFromParent();
-		expect($('#testTarget').html()).toBeFalsy();
+		expect(vc.el.innerHTML).toBeFalsy();
 	});
 	
 });

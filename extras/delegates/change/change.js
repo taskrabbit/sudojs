@@ -21,7 +21,7 @@ sudo.delegates.Change.prototype = Object.create(sudo.Model.prototype);
 // 1. the `type` of Change
 // 2. the value located at the key/path
 // 3. the `oldValue` of the key if present
-sudo.delegates.Change.prototype.filter = function(change) {
+sudo.delegates.Change.prototype.filter = function filter(change) {
 	var filters = this.data.filters, name = change.name, obj = {};
 	// does my delegator care about this?
 	if(name in filters && filters.hasOwnProperty(name)) {

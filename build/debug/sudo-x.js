@@ -686,6 +686,84 @@ sudo.ViewController.prototype._objectForPath_ = function _objectForPath_(path) {
 };
 // `private`
 sudo.ViewController.prototype.role = 'viewController';
+// ##DataView Class Object
+
+// Create an instance of an Object, inheriting from sudo.View that:
+// 1. Expects to have a template located in its internal data Store accessible via `this.get('template')`.
+// 2. Can have a `renderTarget` property in its data store. If so this will be the location
+//		the child injects itself into (if not already in) the DOM
+// 3. Can have a 'renderMethod' property in its data store. If so this is the jQuery method
+//		that the child will use to place itself in it's `renderTarget`.
+// 4. Has a `render` method that when called re-hydrates it's el by passing its
+//		internal data store to its template
+// 5. Handles event binding/unbinding by implementing the sudo.extensions.listener
+//		extension object
+//
+//`constructor`
+sudo.DataView = function(el, data) {
+	var d = data || {}, t;
+	sudo.View.call(this, el, d);
+	// implements the listener extension
+	_.extend(this, sudo.extensions.listener);
+	// dataview's models are observable
+	_.extend(this.model, sudo.extensions.observable);
+	// dont autoRender on the setting of events,
+	// add to this to prevent others if needed
+	this.autoRenderBlacklist = {event: true, events: true};
+	// if autorendering, observe your own model
+	// use this ref to unobserve if desired
+	if(d.autoRender) this.observer = this.model.observe(this.render.bind(this));
+	// compile my template if not already done
+	if((t = d.template)) {
+		if(typeof t === 'string') this.model.data.template = sudo.template(t);
+	}
+	this.bindEvents();
+	if(this.role === 'dataview') this.init();
+};
+// `private`
+sudo.inherit(sudo.View, sudo.DataView);
+// ###addedToParent
+// Container's will check for the presence of this method and call it if it is present
+// after adding a child - essentially, this will auto render the dataview when added to a parent
+sudo.DataView.prototype.addedToParent = function(parent) {
+	return this.render();
+};
+// ###removeFromParent
+// Remove this object from the DOM and its parent's list of children.
+// Overrides `sudo.View.removeFromParent` to actually remove the DOM as well
+//
+// `returns` {Object} `this`
+sudo.DataView.prototype.removeFromParent = function removeFromParent() {
+	this.parent.el.removeChild(this.el);
+	this.parent.removeChild(this);
+	return this;
+};
+// ###render
+// (Re)hydrate the innerHTML of this object via its template and internal data store.
+// If a `renderTarget` is present this Object will inject itself into the target via
+// `this.get('renderMethod')` or defualt to `appendChild`. After injection, the `renderTarget`
+// is deleted from this Objects data store.
+// Event unbinding/rebinding is generally not necessary for the Objects innerHTML as all events from the
+// Object's list of events (`this.get('event(s)'))` are delegated to the el on instantiation.
+//
+// `param` {object} `change` dataviews may be observing their model if `autoRender: true`
+//
+// `returns` {Object} `this`
+sudo.DataView.prototype.render = function render(change) {
+	var d;
+	// return early if a `blacklisted` key is set to my model
+	if(change && this.autoRenderBlacklist[change.name]) return this;
+	d = this.model.data;
+	// TODO research innerDOM
+	this.el.innerHTML = d.template(d);
+	if(d.renderTarget) {
+		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'appendChild'](this.el);
+		delete d.renderTarget;
+	}
+	return this;
+};
+// `private`
+sudo.DataView.prototype.role = 'dataview';
 // ###Templating
 
 // Allow the default {{ js code }}, {{= key }}, and {{- escape stuff }} 
@@ -1197,6 +1275,127 @@ sudo.extensions.observable = {
 		return this.deliverChangeRecords();	
 	}
 };
+// ##Listener Extension Object
+
+// Handles event binding/unbinding via an events hash in the form:
+// event(s): {
+//	type: 'methodName' (or function)
+//	type2: {
+//		sel: 'methodName',
+//		otherSel: function
+//	},
+//	type3: {
+//		sel: {
+//			fn: 'methodName' (or function),
+//			data: {...},
+//			capture: true
+//		}
+//	}
+// }
+//	This hash will be searched for via `this.get('event(s)')`.
+//	About the hash:
+//
+//	A. type -> Compatible DOM event type
+//	B. event(s)[type] === {string} || {function} (no delegation or data)
+//		 1. If a {string}, name of a method on this object. Will be 
+//				converted to a reference to that method with scope bound to `this`.
+//		 2. If a {function} left as is with no scope manipulation. 
+//	C. event(s)[type] === {object}
+//		1. sel -> Optional CSS selector used to delegate events
+//		2. type[sel] -> 
+//			a. If a {string}, name of a method on this object. Will be 
+//				 converted to a reference to that method with scope bound to `this`.
+//			b. If a {function} left as is with no scope manipulation. 
+//			c. If an object, 'fn' key located and treated as 1 or 2 above,
+//				 'data' key located and appended to the `Event` before being 
+//				 passed to the callback
+sudo.extensions.listener = {
+	// `private`
+	_addOrRemove_: function _addOrRemove_(which, type, handler, capture) {
+		this.el[which ? 'addEventListener' : 'removeEventListener'](type, handler, capture);
+	},
+	// ###bindEvents
+	// Bind the events in the data store to this object's $el
+	//
+	// `returns` {Object} `this`
+	bindEvents: function bindEvents() {
+		var hash;
+		// because you must pass the same ref to `unbind`
+		if(!this._predicate_) this._predicate_ = this.predicate.bind(this);
+		if((hash = this.model.data.event || this.model.data.events)) this._handleEvents_(hash, 1);
+		return this;
+	},
+	// `private`
+	_handleEvents_: function _handleEvents_(hash, which) {
+		var types = Object.keys(hash), i;
+		for(i = 0; i < types.length; i++) {
+			this._handleType_(types[i], hash, which);
+		}
+	},
+	// `private`
+	_handleType_: function _handleEvent_(type, hash, which) {
+		var handler = hash[type], handlerType = typeof handler, 
+		selectors, selector, i, nHandler, nHandlerType;
+		// handler is already a function, (un)bind it
+		if(handlerType === 'function') this._addOrRemove_(which, type, handler);
+		else if(handlerType === 'string') {
+			// morph the name into a bound reference
+			hash[type] = this[handler].bind(this);
+			// bind it
+			this._addOrRemove_(which, type, hash[type]);
+		} else { // nested object(s)
+			selectors = Object.keys(handler);
+			// the fn still needs to be bound for the predicate
+			for (i = 0; i < selectors.length; i++) {
+				selector = selectors[i];
+				nHandler = handler[selector]; nHandlerType = typeof nHandler;
+				// check if the val is a methodName or fn, this form (2) has a sel 
+				// - but no data or 'capture'
+				if(nHandlerType === 'object') { // final form - may have sel, data and 'capture'
+					if(typeof nHandler.fn === 'string') {
+						nHandler.fn = this[nHandler.fn].bind(this);
+					}
+					this._addOrRemove_(which, type, this._predicate_, nHandler.capture);
+				} else {
+					if(nHandlerType === 'string') hash[type][selector] = this[nHandler].bind(this);
+					// the predicate will call the fn if sel match is made
+					this._addOrRemove_(which, type, this._predicate_);
+				}
+			}
+		}
+	},
+	// ###predicate
+	//
+	predicate: function predicate(e) {
+		var hash = this.model.data.event || this.model.data.events,
+			type = hash[e.type], selectors, ary, i, selector, handler;
+		if(type) { //{click}
+			selectors = Object.keys(type);
+			for(i = 0; i < selectors.length; i++) {
+				selector = selectors[i]; handler = type[selector];
+				// TODO in the future this could be done at `bindEvents` and stashed
+				// in the hash - if we observe changes to `event(s)`
+				ary = Array.prototype.slice.call(this.$$(selector)); //{click: {'button'}}
+				if(ary.indexOf(e.target) !== -1) {
+					// time to call the methods
+					if(typeof handler === 'object') {
+						if(handler.data) e.data = handler.data;
+						handler.fn(e);
+					} else handler(e); 
+				}
+			}
+		}
+	},
+	// ###unbindEvents
+	// Unbind the events in the data store from this object's $el
+	//
+	// `returns` {Object} `this`
+	unbindEvents: function unbindEvents() {
+		var e;
+		if((e = this.model.data.event || this.model.data.events)) this._handleEvents_(e);
+		return this;
+	}
+};
 //##Change Delegate
 
 // Delegates, if present, can override or extend the behavior
@@ -1220,7 +1419,7 @@ sudo.delegates.Change.prototype = Object.create(sudo.Model.prototype);
 // 1. the `type` of Change
 // 2. the value located at the key/path
 // 3. the `oldValue` of the key if present
-sudo.delegates.Change.prototype.filter = function(change) {
+sudo.delegates.Change.prototype.filter = function filter(change) {
 	var filters = this.data.filters, name = change.name, obj = {};
 	// does my delegator care about this?
 	if(name in filters && filters.hasOwnProperty(name)) {
@@ -1276,7 +1475,7 @@ sudo.delegates.Data.prototype.filter = function(obj) {
 // `private`
 sudo.delegates.Data.prototype.role = 'data';
 
-sudo.version = "0.9.3";
+sudo.version = "0.9.4";
 window.sudo = sudo;
 if(typeof window._ === "undefined") window._ = sudo;
 }).call(this, this);
