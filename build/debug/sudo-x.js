@@ -1310,12 +1310,17 @@ sudo.extensions.observable = {
 //				 'data' key located and appended to the `Event` before being 
 //				 passed to the callback
 sudo.extensions.listener = {
+	// ###_addOrRemove_
+	// All the relevant pieces have been accumulated, now either add or remove the 
+	// Listener to/from the element
+	//
 	// `private`
 	_addOrRemove_: function _addOrRemove_(which, type, handler, capture) {
 		this.el[which ? 'addEventListener' : 'removeEventListener'](type, handler, capture);
 	},
 	// ###bindEvents
-	// Bind the events in the data store to this object's $el
+	// Bind the events in the data store to this object's el, observing the 
+	// options there
 	//
 	// `returns` {Object} `this`
 	bindEvents: function bindEvents() {
@@ -1325,6 +1330,10 @@ sudo.extensions.listener = {
 		if((hash = this.model.data.event || this.model.data.events)) this._handleEvents_(hash, 1);
 		return this;
 	},
+	// ###_handleEvents_
+	// Get each event type to be observed and pass them to _handleType__
+	// with their options
+	//
 	// `private`
 	_handleEvents_: function _handleEvents_(hash, which) {
 		var types = Object.keys(hash), i;
@@ -1332,6 +1341,11 @@ sudo.extensions.listener = {
 			this._handleType_(types[i], hash, which);
 		}
 	},
+	// ###_handleType_
+	// Normalizes the various forms that event data may be in. Works
+	// in conjunction with `_addOrRemove_` and `predicate` to correctly
+	// prepare methods for adding **and removing** event Listeners.
+	//
 	// `private`
 	_handleType_: function _handleEvent_(type, hash, which) {
 		var handler = hash[type], handlerType = typeof handler, 
@@ -1349,14 +1363,14 @@ sudo.extensions.listener = {
 			for (i = 0; i < selectors.length; i++) {
 				selector = selectors[i];
 				nHandler = handler[selector]; nHandlerType = typeof nHandler;
-				// check if the val is a methodName or fn, this form (2) has a sel 
-				// - but no data or 'capture'
-				if(nHandlerType === 'object') { // final form - may have sel, data and 'capture'
+				// type3 above - may have sel, data and 'capture'
+				if(nHandlerType === 'object') { 
 					if(typeof nHandler.fn === 'string') {
 						nHandler.fn = this[nHandler.fn].bind(this);
 					}
 					this._addOrRemove_(which, type, this._predicate_, nHandler.capture);
 				} else {
+					// this form (type2 above) has a sel - but no data or 'capture'
 					if(nHandlerType === 'string') hash[type][selector] = this[nHandler].bind(this);
 					// the predicate will call the fn if sel match is made
 					this._addOrRemove_(which, type, this._predicate_);
@@ -1365,23 +1379,39 @@ sudo.extensions.listener = {
 		}
 	},
 	// ###predicate
+	// When binding events, if a a `selector` (or `data`) is found, the Listener
+	// will bind this method as the callback. Serving as the 'first step' in a process
+	// that will:
+	//   1. Appended the `data` to the `event` object if `data` is present. 
+	//   2. If `sel` is indicated, Compare the `event.target` to the item(s) returned fom
+	//      a querySelectorAll operation on this object's `el`, looking for a match.
+	// When complete, pass the `event` to the desired callback (or don't), as per `bindEvents`.
 	//
+	// **Notes**
+	// This method could be written (along with _handleType_)to create closures for the 
+	// needed data in the event hash rather than looking it up. This would not be
+	// without concerns however, such as memory leaks.
+	//
+	// Also, the querySelectorAll operation could be done at `_handleType_` and stored
+	// in the hash. If the fact that 'QSA' returns a 'live' NodeList proves to be reliable
+	// that may be a more efficient solution, but 'templated' views may be problematic.
+	//
+	// `param` {event} `e`. The DOM event
+	// `returns` {*} call to the indicated method/function
 	predicate: function predicate(e) {
 		var hash = this.model.data.event || this.model.data.events,
 			type = hash[e.type], selectors, ary, i, selector, handler;
-		if(type) { //{click}
+		if(type) {
 			selectors = Object.keys(type);
 			for(i = 0; i < selectors.length; i++) {
 				selector = selectors[i]; handler = type[selector];
-				// TODO in the future this could be done at `bindEvents` and stashed
-				// in the hash - if we observe changes to `event(s)`
-				ary = Array.prototype.slice.call(this.$$(selector)); //{click: {'button'}}
+				ary = Array.prototype.slice.call(this.$$(selector));
 				if(ary.indexOf(e.target) !== -1) {
 					// time to call the methods
 					if(typeof handler === 'object') {
 						if(handler.data) e.data = handler.data;
-						handler.fn(e);
-					} else handler(e); 
+						return handler.fn(e);
+					} else return handler(e); 
 				}
 			}
 		}
@@ -1391,8 +1421,8 @@ sudo.extensions.listener = {
 	//
 	// `returns` {Object} `this`
 	unbindEvents: function unbindEvents() {
-		var e;
-		if((e = this.model.data.event || this.model.data.events)) this._handleEvents_(e);
+		var hash;
+		if((hash = this.model.data.event || this.model.data.events)) this._handleEvents_(hash);
 		return this;
 	}
 };
