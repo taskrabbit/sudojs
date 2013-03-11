@@ -20,18 +20,18 @@
 //
 //	A. type -> Compatible DOM event type
 //	B. event(s)[type] === {string} || {function} (no delegation or data)
-//		 1. If a {string}, name of a method on this object. Will be 
+//		1. If a {string}, name of a method on this object. Will be 
 //				converted to a reference to that method with scope bound to `this`.
-//		 2. If a {function} left as is with no scope manipulation. 
+//		2. If a {function} left as is with no scope manipulation. 
 //	C. event(s)[type] === {object}
 //		1. sel -> Optional CSS selector used to delegate events
 //		2. type[sel] -> 
 //			a. If a {string}, name of a method on this object. Will be 
-//				 converted to a reference to that method with scope bound to `this`.
+//					converted to a reference to that method with scope bound to `this`.
 //			b. If a {function} left as is with no scope manipulation. 
 //			c. If an object, 'fn' key located and treated as 1 or 2 above,
-//				 'data' key located and appended to the `Event` before being 
-//				 passed to the callback
+//					'data' key located and appended to the `Event` before being 
+//					passed to the callback
 sudo.extensions.listener = {
 	// ###_addOrRemove_
 	// All the relevant pieces have been accumulated, now either add or remove the 
@@ -52,6 +52,14 @@ sudo.extensions.listener = {
 		if(!this._predicate_) this._predicate_ = this.predicate.bind(this);
 		if((hash = this.model.data.event || this.model.data.events)) this._handleEvents_(hash, 1);
 		return this;
+	},
+	// ###_getNodes_
+	// Return an array of the nodes matching `this.querySelectorAll(selector)`.
+	// Used during event binding to store the targets of a delegated event
+	//
+	// `private`
+	_getNodes_: function _getNodes_(selector) {
+		return Array.prototype.slice.call(this.$$(selector));
 	},
 	// ###_handleEvents_
 	// Get each event type to be observed and pass them to _handleType_
@@ -90,9 +98,9 @@ sudo.extensions.listener = {
 				if(nHandlerType === 'object') { 
 					if(typeof nHandler.fn === 'string') {
 						nHandler.fn = this[nHandler.fn].bind(this);
-						// set the list of possible targets
-						nHandler._nodes_ = this._getNodes_(selector);
 					}
+					// set the list of possible targets
+					nHandler._nodes_ = this._getNodes_(selector);
 					this._addOrRemove_(which, type, this._predicate_, nHandler.capture);
 				} else {
 					// this form (type2 above) has a sel - but no data or 'capture'
@@ -141,9 +149,13 @@ sudo.extensions.listener = {
 			}
 		}
 	},
-	// ###_getNodes_
-	_getNodes_: function _getNodes_(selector) {
-		return Array.prototype.slice.call(this.$$(selector));
+	// ###rebindEvents
+	// Convenience method to `unbind`, then `bind` the events stored in
+	// this object's model.
+	//
+	// `returns` {object} `this`
+	rebindEvents: function rebindEvents() {
+		this.unbindEvents().bindEvents();
 	},
 	// ###unbindEvents
 	// Unbind the events in the data store from this object's $el
