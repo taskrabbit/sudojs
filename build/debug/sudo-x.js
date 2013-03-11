@@ -1331,7 +1331,7 @@ sudo.extensions.listener = {
 		return this;
 	},
 	// ###_handleEvents_
-	// Get each event type to be observed and pass them to _handleType__
+	// Get each event type to be observed and pass them to _handleType_
 	// with their options
 	//
 	// `private`
@@ -1367,11 +1367,19 @@ sudo.extensions.listener = {
 				if(nHandlerType === 'object') { 
 					if(typeof nHandler.fn === 'string') {
 						nHandler.fn = this[nHandler.fn].bind(this);
+						// set the list of possible targets
+						nHandler._nodes_ = this._getNodes_(selector);
 					}
 					this._addOrRemove_(which, type, this._predicate_, nHandler.capture);
 				} else {
 					// this form (type2 above) has a sel - but no data or 'capture'
-					if(nHandlerType === 'string') hash[type][selector] = this[nHandler].bind(this);
+					// we are going to morph this into an obj - as we will store the _nodes_
+					if(nHandlerType === 'string') {
+						hash[type][selector] = {
+							fn: this[nHandler].bind(this),
+							_nodes_: this._getNodes_(selector)
+						};
+					}
 					// the predicate will call the fn if sel match is made
 					this._addOrRemove_(which, type, this._predicate_);
 				}
@@ -1392,29 +1400,27 @@ sudo.extensions.listener = {
 	// needed data in the event hash rather than looking it up. This would not be
 	// without concerns however, such as memory leaks.
 	//
-	// Also, the querySelectorAll operation could be done at `_handleType_` and stored
-	// in the hash. If the fact that 'QSA' returns a 'live' NodeList proves to be reliable
-	// that may be a more efficient solution, but 'templated' views may be problematic.
-	//
 	// `param` {event} `e`. The DOM event
 	// `returns` {*} call to the indicated method/function
 	predicate: function predicate(e) {
 		var hash = this.model.data.event || this.model.data.events,
-			type = hash[e.type], selectors, ary, i, selector, handler;
+			type = hash[e.type], selectors, i, selector, handler;
 		if(type) {
 			selectors = Object.keys(type);
 			for(i = 0; i < selectors.length; i++) {
 				selector = selectors[i]; handler = type[selector];
-				ary = Array.prototype.slice.call(this.$$(selector));
-				if(ary.indexOf(e.target) !== -1) {
+				// _nodes_ should be in place 
+				if(handler._nodes_.indexOf(e.target) !== -1) {
 					// time to call the methods
-					if(typeof handler === 'object') {
-						if(handler.data) e.data = handler.data;
-						return handler.fn(e);
-					} else return handler(e); 
+					if(handler.data) e.data = handler.data;
+					return handler.fn(e);
 				}
 			}
 		}
+	},
+	// ###_getNodes_
+	_getNodes_: function _getNodes_(selector) {
+		return Array.prototype.slice.call(this.$$(selector));
 	},
 	// ###unbindEvents
 	// Unbind the events in the data store from this object's $el
