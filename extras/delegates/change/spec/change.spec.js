@@ -42,6 +42,13 @@ describe('Sudo Change Delegate', function() {
 		expect(spy).not.toHaveBeenCalled();
 	});
 
+	it('observes unset', function() {
+		model.setPath('is.messiah', true);
+		var spy = spyOn(view, 'denyDivinity');
+		model.unsetPath('is.messiah');
+		expect(spy).toHaveBeenCalled();
+	});
+
 	it('removes a delegate', function() {
 		var del = view.delegate('change');
 		view.removeDelegate('change');
