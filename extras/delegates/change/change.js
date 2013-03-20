@@ -20,9 +20,9 @@ sudo.delegates.Change.prototype = Object.create(sudo.Model.prototype);
 // `param` {string} `val`
 // `returns` {object} this
 sudo.delegates.Change.prototype.addFilter = function addFilter(key, val) {
-	this.get('filters')[key] = val;
+	this.data.filters[key] = val;
 	return this;
-},
+};
 // ###filter
 // Change records are delivered here and filtered, calling any matching
 // methods specified in `this.get('filters').
@@ -49,6 +49,15 @@ sudo.delegates.Change.prototype.filter = function filter(change) {
 		}
 		return this.delegator[filters[name]].call(this.delegator, obj);
 	}
+};
+// ###removeFilter
+// Remove an entry from this object's hash of filters
+//
+// `param` {string} `key`
+// `returns` {object} this
+sudo.delegates.Change.prototype.removeFilter = function removeFilter(key) {
+	delete this.data.filters[key];
+	return this;
 };
 // `private`
 sudo.delegates.Change.prototype.role = 'change';

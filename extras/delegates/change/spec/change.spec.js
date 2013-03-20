@@ -49,6 +49,18 @@ describe('Sudo Change Delegate', function() {
 		expect(spy).toHaveBeenCalled();
 	});
 
+	it('can add a filter', function() {
+		var del = view.delegate('change');
+		del.addFilter('isNaughty', 'acceptIt');
+		expect(del.get('filters').isNaughty).toBe('acceptIt');
+  });
+
+	it('can remove a filter', function() {
+		var del = view.delegate('change');
+		del.removeFilter('isNaughty');
+		expect(del.get('filters').isNaughty).toBeFalsy();
+	});
+
 	it('removes a delegate', function() {
 		var del = view.delegate('change');
 		view.removeDelegate('change');
