@@ -811,7 +811,7 @@ sudo.extensions.observable = {
 		return this.deliverChangeRecords();	
 	}
 };
-sudo.version = "0.9.3";
+sudo.version = "0.9.4";
 window.sudo = sudo;
 if(typeof window._ === "undefined") window._ = sudo;
 }).call(this, this);
