@@ -1021,7 +1021,7 @@ sudo.Navigator.prototype.setData = function setData() {
 // Gather the necessary information about the current environment and 
 // bind to either (push|pop)state or hashchange.
 // Also, if given an imcorrect URL for the current environment (hashchange 
-// vs pushState) normalize it and set accordingly.
+// vs pushState) normalize it and set accordingly (or don't).
 //
 // `returns` {object} `this`
 sudo.Navigator.prototype.start = function start() {
@@ -1043,26 +1043,31 @@ sudo.Navigator.prototype.start = function start() {
 	} else if (this.isHashChange) {
 		$(window).on('hashchange', this.handleChange.bind(this));
 	} else return;
-	// Does the current URL need to changed? (hashchange vs popstate)
 	atRoot = window.location.pathname.replace(/[^\/]$/, '$&/') === this.data['root'];
-	// somehow a pushstate URL got here (and here is hashchange)
-	if(this.isHashChange && !atRoot) {
-		window.location.replace(this.data['root'] + window.location.search + '#' + 
-			this.data.fragment);
-		// return early as browser will redirect
-		return true;
-		// the converse of the above
-	} else if(this.isPushState && atRoot && window.location.hash) {
-		tmp = this.getHash().replace(this.leadingStripper, '');
-		window.history.replaceState({}, document.title, this.data['root'] + 
-			tmp + window.location.search);
+	// somehow a URL got here not in my 'format', unless explicitly told not too, correct this
+	if(!this.data.stay) {
+	 if(this.isHashChange && !atRoot) {
+			window.location.replace(this.data['root'] + window.location.search + '#' + 
+				this.data.fragment);
+			// return early as browser will redirect
+			return true;
+			// the converse of the above
+		} else if(this.isPushState && atRoot && window.location.hash) {
+			tmp = this.getHash().replace(this.leadingStripper, '');
+			window.history.replaceState({}, document.title, this.data['root'] + 
+				tmp + window.location.search);
+		} 
 	}
 	// TODO provide option to `go` from inital `start` state?
 	return this;
 };
-// Is a passed in fragment different from the currently set one?
+// ###urlChanged
+// Is a passed in fragment different from the one currently set at `this.get('fragment')`?
+// If so set the fragment to the passed fragment passed in (as well as any 'query' data), else
+// simply return false
 //
 // `param` {String} `fragment`
+// `returns` {bool} 
 sudo.Navigator.prototype.urlChanged = function urlChanged(fragment) {
 	var current = this.getFragment(fragment);
 	// nothing has changed
@@ -1728,6 +1733,16 @@ sudo.delegates.Data = function(data) {
 };
 // inherits from Model
 sudo.delegates.Data.prototype = Object.create(sudo.Model.prototype);
+// ###addFilter
+// Place an entry into this object's hash of filters
+//
+// `param` {string} `key`
+// `param` {string} `val`
+// `returns` {object} this
+sudo.delegates.Data.prototype.addFilter = function addFilter(key, val) {
+	this.data.filters[key] = val;
+	return this;
+};
 // ###filter
 // iterates over a given object literal and returns a value (if present)
 // located at a given key or path
@@ -1751,6 +1766,15 @@ sudo.delegates.Data.prototype.filter = function(obj) {
 				this.delegator, o[k]);
 		}
 	}
+};
+// ###removeFilter
+// Remove an entry from this object's hash of filters
+//
+// `param` {string} `key`
+// `returns` {object} this
+sudo.delegates.Data.prototype.removeFilter = function removeFilter(key) {
+	delete this.data.filters[key];
+	return this;
 };
 // `private`
 sudo.delegates.Data.prototype.role = 'data';
