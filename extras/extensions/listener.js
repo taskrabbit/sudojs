@@ -20,18 +20,18 @@
 //
 //	A. type -> Compatible DOM event type
 //	B. event(s)[type] === {string} || {function} (no delegation or data)
-//		 1. If a {string}, name of a method on this object. Will be 
+//		1. If a {string}, name of a method on this object. Will be 
 //				converted to a reference to that method with scope bound to `this`.
-//		 2. If a {function} left as is with no scope manipulation. 
+//		2. If a {function} left as is with no scope manipulation. 
 //	C. event(s)[type] === {object}
 //		1. sel -> Optional CSS selector used to delegate events
 //		2. type[sel] -> 
 //			a. If a {string}, name of a method on this object. Will be 
-//				 converted to a reference to that method with scope bound to `this`.
+//					converted to a reference to that method with scope bound to `this`.
 //			b. If a {function} left as is with no scope manipulation. 
 //			c. If an object, 'fn' key located and treated as 1 or 2 above,
-//				 'data' key located and appended to the `Event` before being 
-//				 passed to the callback
+//					'data' key located and appended to the `Event` before being 
+//					passed to the callback
 sudo.extensions.listener = {
 	// ###_addOrRemove_
 	// All the relevant pieces have been accumulated, now either add or remove the 
@@ -53,8 +53,16 @@ sudo.extensions.listener = {
 		if((hash = this.model.data.event || this.model.data.events)) this._handleEvents_(hash, 1);
 		return this;
 	},
+	// ###_getNodes_
+	// Return an array of the nodes matching `this.querySelectorAll(selector)`.
+	// Used during event binding to store the targets of a delegated event
+	//
+	// `private`
+	_getNodes_: function _getNodes_(selector) {
+		return Array.prototype.slice.call(this.$$(selector));
+	},
 	// ###_handleEvents_
-	// Get each event type to be observed and pass them to _handleType__
+	// Get each event type to be observed and pass them to _handleType_
 	// with their options
 	//
 	// `private`
@@ -91,10 +99,18 @@ sudo.extensions.listener = {
 					if(typeof nHandler.fn === 'string') {
 						nHandler.fn = this[nHandler.fn].bind(this);
 					}
+					// set the list of possible targets
+					nHandler._nodes_ = this._getNodes_(selector);
 					this._addOrRemove_(which, type, this._predicate_, nHandler.capture);
 				} else {
 					// this form (type2 above) has a sel - but no data or 'capture'
-					if(nHandlerType === 'string') hash[type][selector] = this[nHandler].bind(this);
+					// we are going to morph this into an obj - as we will store the _nodes_
+					if(nHandlerType === 'string') {
+						hash[type][selector] = {
+							fn: this[nHandler].bind(this),
+							_nodes_: this._getNodes_(selector)
+						};
+					}
 					// the predicate will call the fn if sel match is made
 					this._addOrRemove_(which, type, this._predicate_);
 				}
@@ -115,29 +131,31 @@ sudo.extensions.listener = {
 	// needed data in the event hash rather than looking it up. This would not be
 	// without concerns however, such as memory leaks.
 	//
-	// Also, the querySelectorAll operation could be done at `_handleType_` and stored
-	// in the hash. If the fact that 'QSA' returns a 'live' NodeList proves to be reliable
-	// that may be a more efficient solution, but 'templated' views may be problematic.
-	//
 	// `param` {event} `e`. The DOM event
 	// `returns` {*} call to the indicated method/function
 	predicate: function predicate(e) {
 		var hash = this.model.data.event || this.model.data.events,
-			type = hash[e.type], selectors, ary, i, selector, handler;
+			type = hash[e.type], selectors, i, selector, handler;
 		if(type) {
 			selectors = Object.keys(type);
 			for(i = 0; i < selectors.length; i++) {
 				selector = selectors[i]; handler = type[selector];
-				ary = Array.prototype.slice.call(this.$$(selector));
-				if(ary.indexOf(e.target) !== -1) {
+				// _nodes_ should be in place 
+				if(handler._nodes_.indexOf(e.target) !== -1) {
 					// time to call the methods
-					if(typeof handler === 'object') {
-						if(handler.data) e.data = handler.data;
-						return handler.fn(e);
-					} else return handler(e); 
+					if(handler.data) e.data = handler.data;
+					return handler.fn(e);
 				}
 			}
 		}
+	},
+	// ###rebindEvents
+	// Convenience method to `unbind`, then `bind` the events stored in
+	// this object's model.
+	//
+	// `returns` {object} `this`
+	rebindEvents: function rebindEvents() {
+		this.unbindEvents().bindEvents();
 	},
 	// ###unbindEvents
 	// Unbind the events in the data store from this object's $el

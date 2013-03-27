@@ -71,6 +71,7 @@ describe('sudo.js Dataview Object', function() {
 				button: 'buttonClicked'
 			}
 		});
+		
 		dv.bindEvents();
 		
 		ary = Array.prototype.slice.call(dv.$$('button'));
@@ -90,6 +91,8 @@ describe('sudo.js Dataview Object', function() {
 			sayingTwo: "Look!",
 			buttonTwoValue: "It's just a flesh wound"
 		});
+		
+		dv.rebindEvents();
 
 		expect(dv.$('#one span').textContent).toBe("You've got no arms left.");
 		expect(dv.$('#one button').textContent).toBe("Yes I have");

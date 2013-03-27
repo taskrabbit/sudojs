@@ -32,15 +32,22 @@ describe('Sudo Change Delegate', function() {
 
 	it('filters by path', function() {
 		var spy = spyOn(view, 'denyDivinity');
-		model.set('is.messiah', false);
+		model.setPath('is.messiah', false);
 		expect(spy).toHaveBeenCalled();
 	});
 
 	it('filters by path, ignoring paths not stated', function() {
 		var spy = spyOn(view, 'denyDivinity');
-		model.set('is.naughty', true);
+		model.setPath('is.naughty', true);
 		expect(spy).not.toHaveBeenCalled();
 	});
+
+	it('observes unset', function() {
+		model.setPath('is.messiah', true);
+		var spy = spyOn(view, 'denyDivinity');
+		model.unsetPath('is.messiah');
+		expect(spy).toHaveBeenCalled();
+  });
 
 	it('removes a delegate', function() {
 		var del = view.delegate('change');
