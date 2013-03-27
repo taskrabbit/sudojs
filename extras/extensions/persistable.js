@@ -14,7 +14,7 @@
 // calling any of the methods (or override the model.url() method).
 //
 // Place any other default options in the `ajax` hash
-// that you would want sent to a $.ajax({...}) call. Again, you can also override those
+// that you would want sent to an ajax call. Again, you can also override those
 // defaults by passing in a hash of options to any method:
 //	`this.model.update({patch: true})` etc...
 sudo.extensions.persistable = {
@@ -31,7 +31,7 @@ sudo.extensions.persistable = {
 		return this._sendData_('POST', params);
 	},
 	// ###destroy
-  //
+	//
 	// Delete this model on the server
 	//
 	// `param` {object} `params` Optional hash of options for the XHR
@@ -39,24 +39,40 @@ sudo.extensions.persistable = {
 	destroy: function _delete(params) {
 		return this._sendData_('DELETE', params);
 	},
+	// XHRs are not reusable, therefore we never store them
+	// `params` {object} attributes for the request
+	// `returns` {object} the xhr object
+	// `private`
+	_getXhr_: function _getXhr_(params) {
+		var xhr =  new XMLHttpRequest();
+		xhr.open(params.verb, params.url, true);
+		xhr.responseType = params.responseType;
+		xhr.onload = params.onload;
+		return xhr;
+	},
 	// ###_normalizeParams_
 	// Abstracted logic for preparing the options object. This looks at 
 	// the set `ajax` property, allowing any passed in params to override.
 	//
-	// Sets defaults: JSON dataType and a success callback that simply `sets()` the 
-	// data returned from the server
+	// Sets defaults: JSON responseType and an onload callback that simply `sets()` the 
+	// parsed response returned from the server
 	//
 	// `returns` {object} A normalized params object for the XHR call
-	_normalizeParams_: function _normalizeParams_(meth, opts, params) {
+	_normalizeParams_: function _normalizeParams_(verb, opts, params) {
+		var self = this;
 		opts || (opts = this.data.ajax);
 		opts.url || (opts.url = this.url(opts.baseUrl));
-		opts.type || (opts.type = meth);
-		opts.dataType || (opts.dataType = 'json');
+		opts.verb || (opts.verb = verb);
+		opts.responseType || (opts.responseType = 'json');
 		// the default success callback is to set the data returned from the server
-    // or just the status as `ajaxStatus` if no data was returned
-		opts.success || (opts.success = function(data, status, jqXhr) {
-			data ? this.sets(data) : this.set('ajaxStatus', status);
-		}.bind(this));
+		// or just the status as `ajaxStatus` if no data was returned
+		opts.onload || (opts.onload = function(e) {
+			if(this.status == 200) {
+				this.response ? self.sets(this.response) : self.set('ajaxStatus', 200);
+			} else {
+				self.set('ajaxStatus', this.status);
+			}
+		});
 		// allow the passed in params to override any set in this model's `ajax` options
 		return params ? $.extend(opts, params) : opts;
 	},
@@ -71,9 +87,12 @@ sudo.extensions.persistable = {
 	//
 	// `param` {object} `params`. Optional info for the XHR call. If
 	// present will override any set in this model's `ajax` options object.
-	// `returns` {object} The jQuery XHR object
+	// `returns` {object} The XHR object
 	read: function post(params) {
-		return $.ajax(this._normalizeParams_('GET', null, params));
+		var opts = this._normalizeParams_('GET', null, params),
+			xhr = this._getXhr_(opts);
+		xhr.send();
+		return xhr;	
 	},
 	// ###save
 	//
@@ -90,13 +109,12 @@ sudo.extensions.persistable = {
 	// varying only in their HTTP method. Abstracted logic is here.
 	//
 	// `returns` {object} jqXhr
-	_sendData_: function _sendData_(meth, params) {
-		opts = this.data.ajax;
-		opts.contentType || (opts.contentType = 'application/json');
-		opts.data || (opts.data = this.data);
-		// non GET requests do not 'processData'
-		if(!('processData' in opts)) opts.processData = false;
-		return $.ajax(this._normalizeParams_(meth, opts, params));
+	_sendData_: function _sendData_(verb, params) {
+		var opts = this._normalizeParams_(verb, null, params),
+			xhr = this._getXhr_(opts);
+		// TODO does this work
+		xhr.send(ops.data || JSON.stringify(this.data));
+		return xhr;
 	},
 	// ###update
 	//

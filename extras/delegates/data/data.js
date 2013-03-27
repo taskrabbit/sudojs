@@ -13,6 +13,16 @@ sudo.delegates.Data = function(data) {
 };
 // inherits from Model
 sudo.delegates.Data.prototype = Object.create(sudo.Model.prototype);
+// ###addFilter
+// Place an entry into this object's hash of filters
+//
+// `param` {string} `key`
+// `param` {string} `val`
+// `returns` {object} this
+sudo.delegates.Data.prototype.addFilter = function addFilter(key, val) {
+	this.data.filters[key] = val;
+	return this;
+};
 // ###filter
 // iterates over a given object literal and returns a value (if present)
 // located at a given key or path
@@ -36,6 +46,15 @@ sudo.delegates.Data.prototype.filter = function(obj) {
 				this.delegator, o[k]);
 		}
 	}
+};
+// ###removeFilter
+// Remove an entry from this object's hash of filters
+//
+// `param` {string} `key`
+// `returns` {object} this
+sudo.delegates.Data.prototype.removeFilter = function removeFilter(key) {
+	delete this.data.filters[key];
+	return this;
 };
 // `private`
 sudo.delegates.Data.prototype.role = 'data';
