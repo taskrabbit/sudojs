@@ -843,6 +843,8 @@ sudo.DataView = function(el, data) {
 	if((t = d.template)) {
 		if(typeof t === 'string') this.model.data.template = sudo.template(t);
 	}
+	// hydrating the $el
+	this.$el.html(d.template(d));
 	this.bindEvents();
 	if(this.role === 'dataview') this.init();
 };
