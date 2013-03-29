@@ -423,6 +423,18 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	this._indexChildren_(i);
 	return this;
 };
+
+// ###removeAllChildren
+// Remove all children, removing the name references and index
+// This method calls removeFromParent on the children so it also removes the child's DOM.
+// `returns` {Object} `this`
+sudo.Container.prototype.removeAllChildren = function removeAllChildren(arg) {
+	while(this.children.length > 0) {
+		this.children[0].removeFromParent();
+	}
+	return this;
+};
+
 // ###removeFromParent
 // Remove this object from its parents list of children.
 // Does not alter the dom - do that yourself by overriding this method
