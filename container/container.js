@@ -8,6 +8,7 @@ sudo.Container = function() {
 	sudo.Base.call(this);
 	this.children = [];
 	this.childNames = {};
+	this.child = {};
 };
 // Container is a subclass of sudo.Base
 sudo.inherit(sudo.Base, sudo.Container);
@@ -26,6 +27,7 @@ sudo.Container.prototype.addChild = function addChild(child, name) {
 	if(name) {
 		child.name = name;
 		this.childNames[name] = child.index;
+		this.child[name] = child;
 	}
 	c.push(child);
 	if('addedToParent' in child) child.addedToParent(this);
