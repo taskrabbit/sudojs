@@ -60,10 +60,10 @@ sudo.extensions.persistable = {
 	// `returns` {object} A normalized params object for the XHR call
 	_normalizeParams_: function _normalizeParams_(verb, opts, params) {
 		var self = this;
-		opts || (opts = this.data.ajax);
+		opts || (opts = _.extend({}, this.data.ajax));
 		opts.url || (opts.url = this.url(opts.baseUrl));
 		opts.verb || (opts.verb = verb);
-		opts.responseType || (opts.responseType = 'json');
+		opts.responseType || (opts.responseType = 'text');
 		// the default success callback is to set the data returned from the server
 		// or just the status as `ajaxStatus` if no data was returned
 		opts.onload || (opts.onload = function(e) {
