@@ -1472,7 +1472,7 @@ sudo.extensions.persistable = {
 	// state of the model on the server and set it here (via a success callback).
 	//
 	// `param` {object} `params` Hash of options for the XHR call
-	// `returns` {object} The jQuery XHR object
+	// `returns` {object} The XHR object
 	create: function create(params) {
 		return this._sendData_('POST', params);
 	},
@@ -1481,7 +1481,7 @@ sudo.extensions.persistable = {
 	// Delete this model on the server
 	//
 	// `param` {object} `params` Optional hash of options for the XHR
-	// `returns` {object} jqXhr
+	// `returns` {object} Xhr
 	destroy: function _delete(params) {
 		return this._sendData_('DELETE', params);
 	},
@@ -1500,7 +1500,7 @@ sudo.extensions.persistable = {
 	// Abstracted logic for preparing the options object. This looks at 
 	// the set `ajax` property, allowing any passed in params to override.
 	//
-	// Sets defaults: JSON responseType and an onload callback that simply `sets()` the 
+	// Sets defaults: `text` responseType and an onload callback that simply `sets()` the 
 	// parsed response returned from the server
 	//
 	// `returns` {object} A normalized params object for the XHR call
@@ -1546,7 +1546,7 @@ sudo.extensions.persistable = {
 	// or has been loaded/refreshed from the server. 
 	//
 	// `param` {object} `params` Hash of options for the XHR call
-	// `returns` {object} The jQuery XHR object
+	// `returns` {object} The XHR object
 	save: function save(params) {
 		return ('id' in this.data) ? this.update(params) : this.create(params);
 	},
@@ -1554,7 +1554,7 @@ sudo.extensions.persistable = {
 	// The Create, Update and Patch methods all send data to the server,
 	// varying only in their HTTP method. Abstracted logic is here.
 	//
-	// `returns` {object} jqXhr
+	// `returns` {object} Xhr
 	_sendData_: function _sendData_(verb, params) {
 		var opts = this._normalizeParams_(verb, null, params),
 			xhr = this._getXhr_(opts);
@@ -1573,7 +1573,7 @@ sudo.extensions.persistable = {
 	// or use the `save()` method (that does check).
 	//
 	// `param` {object} `params` Optional hash of options for the XHR
-	// `returns` {object|bool} the jqXhr if called false if not
+	// `returns` {object|bool} the Xhr if called false if not
 	update: function update(params) {
 		return this._sendData_((this.data.ajax.patch || params && params.patch) ? 
 			'PATCH' : 'PUT', params);
