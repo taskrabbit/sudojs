@@ -48,7 +48,7 @@ describe('Sudo Container Class', function() {
 	it('Removes all children', function() {
 		container.addChild(child1, 'Galahad').addChild(child2, 'Robin');
 		expect(container.children.length).toBe(2);
-		container.removeAllChildren();
+		container.removeChildren();
 		expect(container.children.length).toBe(0);
 	});
 

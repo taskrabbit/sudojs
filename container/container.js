@@ -87,13 +87,13 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	return this;
 };
 
-// ###removeAllChildren
+// ###removeChildren
 // Remove all children, removing the name references and index
-// This method calls removeFromParent on the children so it also removes the child's DOM.
+// This method calls removeFromParent on each child. If it's a DataView also removes the child's DOM.
 // `returns` {Object} `this`
-sudo.Container.prototype.removeAllChildren = function removeAllChildren(arg) {
-	while(this.children.length > 0) {
-		this.children[0].removeFromParent();
+sudo.Container.prototype.removeChildren = function removeChildren(arg) {
+	while(this.children.length) {
+		this.children.shift().removeFromParent();
 	}
 	return this;
 };
