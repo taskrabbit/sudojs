@@ -425,10 +425,11 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 };
 
 // ###removeChildren
-// Remove all children, removing the name references and index
-// This method calls removeFromParent on each child. If it's a DataView also removes the child's DOM.
-// `returns` {Object} `this`
-sudo.Container.prototype.removeChildren = function removeChildren(arg) {
+// Remove all children, name references and adjust indexes accordingly.
+// This method calls removeFromParent as each child may have overridden logic there.
+//
+// `returns` {object} `this`
+sudo.Container.prototype.removeChildren = function removeChildren() {
 	while(this.children.length) {
 		this.children.shift().removeFromParent();
 	}
@@ -451,6 +452,9 @@ sudo.Container.prototype.role = 'container';
 // the 'target' may be left out, causing the `bubble()` method to be called.
 // What this does is allow children of a `sudo.Container` to simply pass
 // events  upward, delegating the responsibility of deciding what to do to the parent.
+//
+// TODO Currently, only the first target method found is called, then the
+// bubbling is stopped. Should bubbling continue all the way up the 'chain'?
 //
 // `param` {*} Any number of arguments is supported, but the first is the only one searched for info. 
 // A sendMethod will be located by:
