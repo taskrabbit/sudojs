@@ -36,7 +36,7 @@ sudo.extensions.persistable = {
 	//
 	// `param` {object} `params` Optional hash of options for the XHR
 	// `returns` {object} jqXhr
-	destroy: function _delete(params) {
+	destroy: function destroy(params) {
 		return this._sendData_('DELETE', params);
 	},
 	// ###_normalizeParams_
@@ -72,7 +72,7 @@ sudo.extensions.persistable = {
 	// `param` {object} `params`. Optional info for the XHR call. If
 	// present will override any set in this model's `ajax` options object.
 	// `returns` {object} The jQuery XHR object
-	read: function post(params) {
+	read: function read(params) {
 		return $.ajax(this._normalizeParams_('GET', null, params));
 	},
 	// ###save
