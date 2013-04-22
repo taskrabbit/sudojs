@@ -423,6 +423,19 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	this._indexChildren_(i);
 	return this;
 };
+
+// ###removeChildren
+// Remove all children, name references and adjust indexes accordingly.
+// This method calls removeFromParent as each child may have overridden logic there.
+//
+// `returns` {object} `this`
+sudo.Container.prototype.removeChildren = function removeChildren() {
+	while(this.children.length) {
+		this.children.shift().removeFromParent();
+	}
+	return this;
+};
+
 // ###removeFromParent
 // Remove this object from its parents list of children.
 // Does not alter the dom - do that yourself by overriding this method
@@ -439,6 +452,9 @@ sudo.Container.prototype.role = 'container';
 // the 'target' may be left out, causing the `bubble()` method to be called.
 // What this does is allow children of a `sudo.Container` to simply pass
 // events  upward, delegating the responsibility of deciding what to do to the parent.
+//
+// TODO Currently, only the first target method found is called, then the
+// bubbling is stopped. Should bubbling continue all the way up the 'chain'?
 //
 // `param` {*} Any number of arguments is supported, but the first is the only one searched for info. 
 // A sendMethod will be located by:
@@ -1574,7 +1590,7 @@ sudo.extensions.persistable = {
 	//
 	// `returns` {object} A normalized params object for the XHR call
 	_normalizeParams_: function _normalizeParams_(meth, opts, params) {
-		opts || (opts = this.data.ajax);
+		opts || (opts = $.extend({}, this.data.ajax));
 		opts.url || (opts.url = this.url(opts.baseUrl));
 		opts.type || (opts.type = meth);
 		opts.dataType || (opts.dataType = 'json');
@@ -1617,7 +1633,7 @@ sudo.extensions.persistable = {
 	//
 	// `returns` {object} jqXhr
 	_sendData_: function _sendData_(meth, params) {
-		opts = this.data.ajax;
+		opts = $.extend({}, this.data.ajax);
 		opts.contentType || (opts.contentType = 'application/json');
 		opts.data || (opts.data = this.data);
 		// non GET requests do not 'processData'

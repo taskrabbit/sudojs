@@ -48,7 +48,7 @@ sudo.extensions.persistable = {
 	//
 	// `returns` {object} A normalized params object for the XHR call
 	_normalizeParams_: function _normalizeParams_(meth, opts, params) {
-		opts || (opts = this.data.ajax);
+		opts || (opts = $.extend({}, this.data.ajax));
 		opts.url || (opts.url = this.url(opts.baseUrl));
 		opts.type || (opts.type = meth);
 		opts.dataType || (opts.dataType = 'json');
@@ -91,7 +91,7 @@ sudo.extensions.persistable = {
 	//
 	// `returns` {object} jqXhr
 	_sendData_: function _sendData_(meth, params) {
-		opts = this.data.ajax;
+		opts = $.extend({}, this.data.ajax);
 		opts.contentType || (opts.contentType = 'application/json');
 		opts.data || (opts.data = this.data);
 		// non GET requests do not 'processData'
