@@ -8,7 +8,7 @@ describe('sudo.js View Object', function() {
 			attributes: {
 				id: 'spam', 
 				'class': 'eggs',
-				'data-foo': 'foo'
+				'data-foo': 'bar'
 			}
 		});
 	});
@@ -34,7 +34,7 @@ describe('sudo.js View Object', function() {
 	});
 
 	it('has the data object', function() {
-		expect(v2.$el.data().foo).toBe('foo');
+		expect(v2.$el.data('foo')).toBe('bar');
 	});
 
 	it('detects a non jquerified el passed to it', function() {
