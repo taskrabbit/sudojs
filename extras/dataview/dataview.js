@@ -29,6 +29,7 @@ sudo.DataView = function(el, data) {
 	if((t = d.template)) {
 		if(typeof t === 'string') this.model.data.template = sudo.template(t);
 	}
+	this.build();
 	this.bindEvents();
 	if(this.role === 'dataview') this.init();
 };
@@ -39,6 +40,14 @@ sudo.inherit(sudo.View, sudo.DataView);
 // after adding a child - essentially, this will auto render the dataview when added to a parent
 sudo.DataView.prototype.addedToParent = function(parent) {
 	return this.render();
+};
+// ###build
+// Construct the innerHTML of the $el here so that the behavior of the
+// DataView, that the markup is ready after a subclass calls `this.construct`,
+// is the same as other View classes
+sudo.DataView.prototype.build = function build() {
+	this.$el.html(this.model.data.template(d));
+	this.built = true;
 };
 // ###removeFromParent
 // Remove this object from the DOM and its parent's list of children.
@@ -66,7 +75,10 @@ sudo.DataView.prototype.render = function render(change) {
 	// return early if a `blacklisted` key is set to my model
 	if(change && this.autoRenderBlacklist[change.name]) return this;
 	d = this.model.data;
-	this.$el.html(d.template(d));
+	// has `build` been called already? If not: 
+	if(!this.built) this.$el.html(d.template(d));
+	// if so erase the flag
+	else this.built = false;
 	if(d.renderTarget) {
 		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
 		delete d.renderTarget;
