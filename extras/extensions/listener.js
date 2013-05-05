@@ -51,6 +51,13 @@ sudo.extensions.listener = {
 			this.$el.off(e.name, e.sel);
 		}
 	},
+	// ###rebindEvents
+	// Convenience method for `this.unbindEvents().bindEvents()`
+	//
+	// 'returns' {object} 'this'
+	rebindEvents: function rebindEvents() {
+		return this.unbindEvents().bindEvents();
+	},
 	// ###unbindEvents
 	// Unbind the events in the data store from this object's $el
 	//

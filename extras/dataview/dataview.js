@@ -46,8 +46,9 @@ sudo.DataView.prototype.addedToParent = function(parent) {
 // DataView, that the markup is ready after a subclass calls `this.construct`,
 // is the same as other View classes
 sudo.DataView.prototype.build = function build() {
-	this.$el.html(this.model.data.template(d));
+	this.$el.html(this.model.data.template(this.model.data));
 	this.built = true;
+	return this;
 };
 // ###removeFromParent
 // Remove this object from the DOM and its parent's list of children.

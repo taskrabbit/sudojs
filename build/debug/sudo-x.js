@@ -859,6 +859,7 @@ sudo.DataView = function(el, data) {
 	if((t = d.template)) {
 		if(typeof t === 'string') this.model.data.template = sudo.template(t);
 	}
+	this.build();
 	this.bindEvents();
 	if(this.role === 'dataview') this.init();
 };
@@ -869,6 +870,15 @@ sudo.inherit(sudo.View, sudo.DataView);
 // after adding a child - essentially, this will auto render the dataview when added to a parent
 sudo.DataView.prototype.addedToParent = function(parent) {
 	return this.render();
+};
+// ###build
+// Construct the innerHTML of the $el here so that the behavior of the
+// DataView, that the markup is ready after a subclass calls `this.construct`,
+// is the same as other View classes
+sudo.DataView.prototype.build = function build() {
+	this.$el.html(this.model.data.template(this.model.data));
+	this.built = true;
+	return this;
 };
 // ###removeFromParent
 // Remove this object from the DOM and its parent's list of children.
@@ -896,7 +906,10 @@ sudo.DataView.prototype.render = function render(change) {
 	// return early if a `blacklisted` key is set to my model
 	if(change && this.autoRenderBlacklist[change.name]) return this;
 	d = this.model.data;
-	this.$el.html(d.template(d));
+	// has `build` been called already? If not: 
+	if(!this.built) this.$el.html(d.template(d));
+	// if so erase the flag
+	else this.built = false;
 	if(d.renderTarget) {
 		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
 		delete d.renderTarget;
@@ -1530,6 +1543,13 @@ sudo.extensions.listener = {
 			this.$el.off(e.name, e.sel);
 		}
 	},
+	// ###rebindEvents
+	// Convenience method for `this.unbindEvents().bindEvents()`
+	//
+	// 'returns' {object} 'this'
+	rebindEvents: function rebindEvents() {
+		return this.unbindEvents().bindEvents();
+	},
 	// ###unbindEvents
 	// Unbind the events in the data store from this object's $el
 	//
@@ -1578,7 +1598,7 @@ sudo.extensions.persistable = {
 	//
 	// `param` {object} `params` Optional hash of options for the XHR
 	// `returns` {object} jqXhr
-	destroy: function _delete(params) {
+	destroy: function destroy(params) {
 		return this._sendData_('DELETE', params);
 	},
 	// ###_normalizeParams_
@@ -1614,7 +1634,7 @@ sudo.extensions.persistable = {
 	// `param` {object} `params`. Optional info for the XHR call. If
 	// present will override any set in this model's `ajax` options object.
 	// `returns` {object} The jQuery XHR object
-	read: function post(params) {
+	read: function read(params) {
 		return $.ajax(this._normalizeParams_('GET', null, params));
 	},
 	// ###save
