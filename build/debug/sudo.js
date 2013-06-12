@@ -136,6 +136,7 @@ sudo.Base = function() {
 sudo.Base.prototype.addDelegate = function addDelegate(del) {
 	del.delegator = this;
 	this.delegates.push(del);
+  if('addedAsDelegate' in del) del.addedAsDelegate(this);
 	return this;
 };
 // ###base
@@ -827,7 +828,7 @@ sudo.extensions.observable = {
 		return this.deliverChangeRecords();	
 	}
 };
-sudo.version = "0.9.4";
+sudo.version = "0.9.5";
 window.sudo = sudo;
 if(typeof window._ === "undefined") window._ = sudo;
 }).call(this, this);
