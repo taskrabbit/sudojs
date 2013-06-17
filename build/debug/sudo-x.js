@@ -424,7 +424,6 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 	this._indexChildren_(i);
 	return this;
 };
-
 // ###removeChildren
 // Remove all children, name references and adjust indexes accordingly.
 // This method calls removeFromParent as each child may have overridden logic there.
@@ -436,7 +435,6 @@ sudo.Container.prototype.removeChildren = function removeChildren() {
 	}
 	return this;
 };
-
 // ###removeFromParent
 // Remove this object from its parents list of children.
 // Does not alter the dom - do that yourself by overriding this method

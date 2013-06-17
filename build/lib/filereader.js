@@ -13,7 +13,7 @@ var Filereader = function(filename, pf) {
 		script_sources: [],
 		scripts_parsed: false
 	});
-	Object.extend(this, $.extensions.observable);
+	$.extend(this, $.extensions.observable);
 	// set the full path to `html_filename`
 	this.set('path_to_file', pf.get('root_path') + '/' + filename);
 };
