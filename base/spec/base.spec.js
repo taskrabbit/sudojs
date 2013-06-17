@@ -6,6 +6,9 @@ describe('Sudo Base Object', function() {
 		d.burgle = function() {
 			return this.role;
 		};
+    d.addedAsDelegate = function() {
+      this.added = true;
+    };
 	});
 
 	it('is an instance of the Base class', function() {
@@ -23,6 +26,13 @@ describe('Sudo Base Object', function() {
 	it('can add a delegate', function() {
 		b.addDelegate(d);
 		expect(b.delegates.length).toBe(1);
+	});
+
+	it('calls addedAsDelegate if present', function() {
+    var spy = spyOn(d, 'addedAsDelegate').andCallThrough();
+		b.addDelegate(d);
+		expect(spy).toHaveBeenCalled();
+    expect(d.added).toBe(true);
 	});
 
 	it('can fetch a delegate by role', function() {
