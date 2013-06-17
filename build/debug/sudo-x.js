@@ -136,7 +136,7 @@ sudo.Base = function() {
 sudo.Base.prototype.addDelegate = function addDelegate(del) {
 	del.delegator = this;
 	this.delegates.push(del);
-  if('addedAsDelegate' in del) del.addedAsDelegate(this);
+	if('addedAsDelegate' in del) del.addedAsDelegate(this);
 	return this;
 };
 // ###base
