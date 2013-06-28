@@ -17,8 +17,8 @@ sudo.DataView = function(el, data) {
 	sudo.View.call(this, el, d);
 	// implements the listener extension
 	$.extend(this, sudo.extensions.listener);
-	// dataview's models are observable
-	$.extend(this.model, sudo.extensions.observable);
+	// dataview's models are observable, make it so if not already
+	if(!this.model.observe) $.extend(this.model, sudo.extensions.observable);
 	// dont autoRender on the setting of events,
 	// add to this to prevent others if needed
 	this.autoRenderBlacklist = {event: true, events: true};
