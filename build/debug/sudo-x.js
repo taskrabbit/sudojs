@@ -842,8 +842,7 @@ sudo.template = function template(str, data, scope) {
 //
 //`constructor`
 sudo.DataView = function(el, data) {
-	var d = data || {}, t;
-	sudo.View.call(this, el, d);
+	sudo.View.call(this, el, data);
 	// implements the listener extension
 	$.extend(this, sudo.extensions.listener);
 	// dataview's models are observable, make it so if not already
@@ -853,12 +852,8 @@ sudo.DataView = function(el, data) {
 	this.autoRenderBlacklist = {event: true, events: true};
 	// if autorendering, observe your own model
 	// use this ref to unobserve if desired
-	if(d.autoRender) this.observer = this.model.observe(this.render.bind(this));
-	// compile my template if not already done
-	if((t = d.template)) {
-		if(typeof t === 'string') this.model.data.template = sudo.template(t);
-	}
-	this.build();
+	if(this.model.data.autoRender) this.observer = this.model.observe(this.render.bind(this));
+  this.build();
 	this.bindEvents();
 	if(this.role === 'dataview') this.init();
 };
@@ -873,9 +868,13 @@ sudo.DataView.prototype.addedToParent = function(parent) {
 // ###build
 // Construct the innerHTML of the $el here so that the behavior of the
 // DataView, that the markup is ready after a subclass calls `this.construct`,
-// is the same as other View classes
+// is the same as other View classes -- IF there is a template available
+// there may not be yet as some get added later by a ViewController
 sudo.DataView.prototype.build = function build() {
-	this.$el.html(this.model.data.template(this.model.data));
+  var t;
+  if(!(t = this.model.data.template)) return;
+	if(typeof t === 'string') t = sudo.template(t);
+	this.$el.html(t(this.model.data));
 	this.built = true;
 	return this;
 };
@@ -905,9 +904,10 @@ sudo.DataView.prototype.render = function render(change) {
 	// return early if a `blacklisted` key is set to my model
 	if(change && this.autoRenderBlacklist[change.name]) return this;
 	d = this.model.data;
-	// has `build` been called already? If not: 
-	if(!this.built) this.$el.html(d.template(d));
-	// if so erase the flag
+	// has `build` been executed already? If not call it again
+	if(!this.built) this.build();
+  // if there is no template by this point *you are doing it wrong*
+	// erase the flag
 	else this.built = false;
 	if(d.renderTarget) {
 		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
