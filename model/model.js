@@ -7,11 +7,11 @@
 //
 // `constructor`
 sudo.Model = function(data) {
-	sudo.Base.call(this);
-	this.data = data || {};
-	// only models are `observable`
-	this.callbacks = [];
-	this.changeRecords = [];
+  sudo.Base.call(this);
+  this.data = data || {};
+  // only models are `observable`
+  this.callbacks = [];
+  this.changeRecords = [];
 };
 // Model inherits from sudo.Base
 // `private`
@@ -22,7 +22,7 @@ sudo.inherit(sudo.Base, sudo.Model);
 // `param` {String} `key`. The name of the key
 // `returns` {*}. The value associated with the key or false if not found.
 sudo.Model.prototype.get = function get(key) {
-	return this.data[key];
+  return this.data[key];
 };
 // ###getPath
 //
@@ -31,7 +31,7 @@ sudo.Model.prototype.get = function get(key) {
 //
 // `returns` {*|undefined}. The value at keypath or undefined if not found.
 sudo.Model.prototype.getPath = function getPath(path) {
-	return sudo.getPath(path, this.data);
+  return sudo.getPath(path, this.data);
 };
 // ###gets
 // Assembles and returns an object of key:value pairs for each key
@@ -40,12 +40,12 @@ sudo.Model.prototype.getPath = function getPath(path) {
 // `param` {array} `ary`. An array of keys.
 // `returns` {object}
 sudo.Model.prototype.gets = function gets(ary) {
-	var i, obj = {};
-	for (i = 0; i < ary.length; i++) {
-		obj[ary[i]] = ary[i].indexOf('.') === -1 ? this.data[ary[i]] :
-			this.getPath(ary[i]);
-	}
-	return obj;
+  var i, obj = {};
+  for (i = 0; i < ary.length; i++) {
+    obj[ary[i]] = ary[i].indexOf('.') === -1 ? this.data[ary[i]] :
+      this.getPath(ary[i]);
+  }
+  return obj;
 };
 // `private`
 sudo.Model.prototype.role = 'model';
@@ -56,9 +56,9 @@ sudo.Model.prototype.role = 'model';
 // `param` {*} `value`. The value associated with the key.
 // `returns` {Object} `this`
 sudo.Model.prototype.set = function set(key, value) {
-	// _NOTE: intentional possibilty of setting a falsy value_
-	this.data[key] = value;
-	return this;
+  // _NOTE: intentional possibilty of setting a falsy value_
+  this.data[key] = value;
+  return this;
 };
 // ###setPath
 //
@@ -69,8 +69,8 @@ sudo.Model.prototype.set = function set(key, value) {
 // `param` {*} `value`
 // `returns` {Object} this.
 sudo.Model.prototype.setPath = function setPath(path, value) {
-	sudo.setPath(path, value, this.data);
-	return this;
+  sudo.setPath(path, value, this.data);
+  return this;
 };
 // ###sets
 // Invokes `set()` or `setPath()` for each key value pair in `obj`.
@@ -79,12 +79,12 @@ sudo.Model.prototype.setPath = function setPath(path, value) {
 // `param` {Object} `obj`. The keys and values to set.
 // `returns` {Object} `this`
 sudo.Model.prototype.sets = function sets(obj) {
-	var i, k = Object.keys(obj);
-	for(i = 0; i < k.length; i++) {
-		k[i].indexOf('.') === -1 ? this.set(k[i], obj[k[i]]) :
-			this.setPath(k[i], obj[k[i]]);
-	}
-	return this;
+  var i, k = Object.keys(obj);
+  for(i = 0; i < k.length; i++) {
+    k[i].indexOf('.') === -1 ? this.set(k[i], obj[k[i]]) :
+      this.setPath(k[i], obj[k[i]]);
+  }
+  return this;
 };
 // ###unset
 // Remove a key:value pair from this object's data store
@@ -92,8 +92,8 @@ sudo.Model.prototype.sets = function sets(obj) {
 // `param` {String} key
 // `returns` {Object} `this`
 sudo.Model.prototype.unset = function unset(key) {
-	delete this.data[key];
-	return this;
+  delete this.data[key];
+  return this;
 };
 // ###unsetPath
 // Uses `sudo.unsetPath` operating on this models data hash
@@ -101,8 +101,8 @@ sudo.Model.prototype.unset = function unset(key) {
 // `param` {String} path
 // `returns` {Object} `this`
 sudo.Model.prototype.unsetPath = function unsetPath(path) {
-	sudo.unsetPath(path, this.data);
-	return this;
+  sudo.unsetPath(path, this.data);
+  return this;
 };
 // ###unsets
 // Deletes a number of keys or paths from this object's data store
@@ -110,10 +110,10 @@ sudo.Model.prototype.unsetPath = function unsetPath(path) {
 // `param` {array} `ary`. An array of keys or paths.
 // `returns` {Objaect} `this`
 sudo.Model.prototype.unsets = function unsets(ary) {
-	var i;
-	for(i = 0; i < ary.length; i++) {
-		ary[i].indexOf('.') === -1 ? this.unset(ary[i]) :
-			this.unsetPath(ary[i]);
-	}
-	return this;
+  var i;
+  for(i = 0; i < ary.length; i++) {
+    ary[i].indexOf('.') === -1 ? this.unset(ary[i]) :
+      this.unsetPath(ary[i]);
+  }
+  return this;
 };

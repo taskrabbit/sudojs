@@ -5,9 +5,9 @@
 //
 // `type` {Object}
 sudo.templateSettings = {
-	evaluate: /\{\{([\s\S]+?)\}\}/g,
-	interpolate: /\{\{=([\s\S]+?)\}\}/g,
-	escape: /\{\{-([\s\S]+?)\}\}/g
+  evaluate: /\{\{([\s\S]+?)\}\}/g,
+  interpolate: /\{\{=([\s\S]+?)\}\}/g,
+  escape: /\{\{-([\s\S]+?)\}\}/g
 };
 // Certain characters need to be escaped so that they can be put 
 // into a string literal when templating.
@@ -15,27 +15,27 @@ sudo.templateSettings = {
 // `type` {Object}
 sudo.escapes = {};
 (function(s) {
-	var e = {
-		'\\': '\\',
-		"'": "'",
-		r: '\r',
-		n: '\n',
-		t: '\t',
-		u2028: '\u2028',
-		u2029: '\u2029'
-	};
-	for (var key in e) s.escapes[e[key]] = key;
+  var e = {
+    '\\': '\\',
+    "'": "'",
+    r: '\r',
+    n: '\n',
+    t: '\t',
+    u2028: '\u2028',
+    u2029: '\u2029'
+  };
+  for (var key in e) s.escapes[e[key]] = key;
 }(sudo));
 // lookup hash for `escape`
 //
 // `type` {Object}
 sudo.htmlEscapes = {
-	'&': '&amp;',
-	'<': '&lt;',
-	'>': '&gt;',
-	'"': '&quot;',
-	"'": '&#x27;',
-	'/': '&#x2F;'
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#x27;',
+  '/': '&#x2F;'
 };
 // Escapes certain characters for templating
 //
@@ -54,9 +54,9 @@ sudo.unescaper = /\\(\\|'|r|n|t|u2028|u2029)/g;
 //
 // `param` {String} str
 sudo.escape = function(str) {
-	return str.replace(sudo.htmlEscaper, function(match) {
-		return sudo.htmlEscapes[match];
-	});
+  return str.replace(sudo.htmlEscaper, function(match) {
+    return sudo.htmlEscapes[match];
+  });
 };
 // ###unescape
 // Within an interpolation, evaluation, or escaping,
@@ -64,9 +64,9 @@ sudo.escape = function(str) {
 //
 // `param` {string} str
 sudo.unescape = function unescape(str) {
-	return str.replace(sudo.unescaper, function(match, escape) {
-		return sudo.escapes[escape];
-	});
+  return str.replace(sudo.unescaper, function(match, escape) {
+    return sudo.escapes[escape];
+  });
 };
 // ###template
 // JavaScript micro-templating, similar to John Resig's (and it's offspring) implementation.
@@ -78,26 +78,26 @@ sudo.unescape = function unescape(str) {
 // `param` {Object} `data`. Optional hash of key:value pairs.
 // `param` {string} `scope`. Optional context name of your `data object`, set to 'data' if falsy.
 sudo.template = function template(str, data, scope) {
-	scope || (scope = 'data');
-	var settings = sudo.templateSettings, render, template,
-	// Compile the template source, taking care to escape characters that
-	// cannot be included in a string literal and then unescape them in code blocks.
-	source = "_p+='" + str.replace(sudo.escaper, function(match) {
-		return '\\' + sudo.escapes[match];
-	}).replace(settings.escape, function(match, code) {
-		return "'+\n((_t=(" + sudo.unescape(code) + "))==null?'':sudo.escape(_t))+\n'";
-	}).replace(settings.interpolate, function(match, code) {
-		return "'+\n((_t=(" + sudo.unescape(code) + "))==null?'':_t)+\n'";
-	}).replace(settings.evaluate, function(match, code) {
-		return "';\n" + sudo.unescape(code) + "\n_p+='";
-	}) + "';\n";
-	source = "var _t,_p='';" + source + "return _p;\n";
-	render = new Function(scope, source);
-	if (data) return render(data);
-	template = function(data) {
-		return render.call(this, data);
-	};
-	// Provide the compiled function source as a convenience for reflection/compilation
-	template.source = 'function(' + scope + '){\n' + source + '}';
-	return template;
+  scope || (scope = 'data');
+  var settings = sudo.templateSettings, render, template,
+  // Compile the template source, taking care to escape characters that
+  // cannot be included in a string literal and then unescape them in code blocks.
+  source = "_p+='" + str.replace(sudo.escaper, function(match) {
+    return '\\' + sudo.escapes[match];
+  }).replace(settings.escape, function(match, code) {
+    return "'+\n((_t=(" + sudo.unescape(code) + "))==null?'':sudo.escape(_t))+\n'";
+  }).replace(settings.interpolate, function(match, code) {
+    return "'+\n((_t=(" + sudo.unescape(code) + "))==null?'':_t)+\n'";
+  }).replace(settings.evaluate, function(match, code) {
+    return "';\n" + sudo.unescape(code) + "\n_p+='";
+  }) + "';\n";
+  source = "var _t,_p='';" + source + "return _p;\n";
+  render = new Function(scope, source);
+  if (data) return render(data);
+  template = function(data) {
+    return render.call(this, data);
+  };
+  // Provide the compiled function source as a convenience for reflection/compilation
+  template.source = 'function(' + scope + '){\n' + source + '}';
+  return template;
 };

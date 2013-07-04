@@ -13,20 +13,20 @@
 //
 //`constructor`
 sudo.DataView = function(el, data) {
-	sudo.View.call(this, el, data);
-	// implements the listener extension
-	$.extend(this, sudo.extensions.listener);
-	// dataview's models are observable, make it so if not already
-	if(!this.model.observe) $.extend(this.model, sudo.extensions.observable);
-	// dont autoRender on the setting of events,
-	// add to this to prevent others if needed
-	this.autoRenderBlacklist = {event: true, events: true};
-	// if autorendering, observe your own model
-	// use this ref to unobserve if desired
-	if(this.model.data.autoRender) this.observer = this.model.observe(this.render.bind(this));
+  sudo.View.call(this, el, data);
+  // implements the listener extension
+  $.extend(this, sudo.extensions.listener);
+  // dataview's models are observable, make it so if not already
+  if(!this.model.observe) $.extend(this.model, sudo.extensions.observable);
+  // dont autoRender on the setting of events,
+  // add to this to prevent others if needed
+  this.autoRenderBlacklist = {event: true, events: true};
+  // if autorendering, observe your own model
+  // use this ref to unobserve if desired
+  if(this.model.data.autoRender) this.observer = this.model.observe(this.render.bind(this));
   this.build();
-	this.bindEvents();
-	if(this.role === 'dataview') this.init();
+  this.bindEvents();
+  if(this.role === 'dataview') this.init();
 };
 // `private`
 sudo.inherit(sudo.View, sudo.DataView);
@@ -34,7 +34,7 @@ sudo.inherit(sudo.View, sudo.DataView);
 // Container's will check for the presence of this method and call it if it is present
 // after adding a child - essentially, this will auto render the dataview when added to a parent
 sudo.DataView.prototype.addedToParent = function(parent) {
-	return this.render();
+  return this.render();
 };
 // ###build
 // Construct the innerHTML of the $el here so that the behavior of the
@@ -44,10 +44,10 @@ sudo.DataView.prototype.addedToParent = function(parent) {
 sudo.DataView.prototype.build = function build() {
   var t;
   if(!(t = this.model.data.template)) return;
-	if(typeof t === 'string') t = sudo.template(t);
-	this.$el.html(t(this.model.data));
-	this.built = true;
-	return this;
+  if(typeof t === 'string') t = sudo.template(t);
+  this.$el.html(t(this.model.data));
+  this.built = true;
+  return this;
 };
 // ###removeFromParent
 // Remove this object from the DOM and its parent's list of children.
@@ -55,9 +55,9 @@ sudo.DataView.prototype.build = function build() {
 //
 // `returns` {Object} `this`
 sudo.DataView.prototype.removeFromParent = function removeFromParent() {
-	this.parent.removeChild(this);
-	this.$el.remove();
-	return this;
+  this.parent.removeChild(this);
+  this.$el.remove();
+  return this;
 };
 // ###render
 // (Re)hydrate the innerHTML of this object via its template and internal data store.
@@ -71,20 +71,20 @@ sudo.DataView.prototype.removeFromParent = function removeFromParent() {
 //
 // `returns` {Object} `this`
 sudo.DataView.prototype.render = function render(change) {
-	var d;
-	// return early if a `blacklisted` key is set to my model
-	if(change && this.autoRenderBlacklist[change.name]) return this;
-	d = this.model.data;
-	// has `build` been executed already? If not call it again
-	if(!this.built) this.build();
+  var d;
+  // return early if a `blacklisted` key is set to my model
+  if(change && this.autoRenderBlacklist[change.name]) return this;
+  d = this.model.data;
+  // has `build` been executed already? If not call it again
+  if(!this.built) this.build();
   // if there is no template by this point *you are doing it wrong*
-	// erase the flag
-	else this.built = false;
-	if(d.renderTarget) {
-		this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
-		delete d.renderTarget;
-	}
-	return this;
+  // erase the flag
+  else this.built = false;
+  if(d.renderTarget) {
+    this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
+    delete d.renderTarget;
+  }
+  return this;
 };
 // `private`
 sudo.DataView.prototype.role = 'dataview';

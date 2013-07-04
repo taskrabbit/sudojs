@@ -145,5 +145,6 @@ be sure to add them to sudo.html (and/or the sudo-x.html) config file or they wi
 
 ### Extras
 
-The `-x` debug version, `build/debug/sudo-x.js`, simply contains the 'modules' located in the `extras` directory that have been
-tested and documented. They do not belong in core but provide added functionality that some may find useful.
+The debug version, `build/debug/sudo.js`, contains the basic 'modules' as well as the others located in the `extras` directory that have been
+tested and documented. A basic build is also available (`sudo-basic`), this serves as an example of how to configure a custom build of
+`sudo.js` if desired.

@@ -18,14 +18,14 @@
 //
 // `constructor`
 sudo.View = function(el, data) {
-	sudo.Container.call(this);
-	// allow model instance to be passed in as well
-	if(data) {
-		this.model = data.role === 'model' ? data :
-			this.model = new sudo.Model(data);
-	} 
-	this.setEl(el);
-	if(this.role === 'view') this.init();
+  sudo.Container.call(this);
+  // allow model instance to be passed in as well
+  if(data) {
+    this.model = data.role === 'model' ? data :
+      this.model = new sudo.Model(data);
+  } 
+  this.setEl(el);
+  if(this.role === 'view') this.init();
 };
 // View inherits from Container
 // `private`
@@ -36,16 +36,16 @@ sudo.inherit(sudo.Container, sudo.View);
 //
 // `returns` {Object} `this`
 sudo.View.prototype.becomePremier = function becomePremier() {
-	var p, f = function() {
-			this.isPremier = true;
-			sudo.premier = this;
-		}.bind(this);
-	// is there an existing premier that isn't me?
-	if((p = sudo.premier) && p.uid !== this.uid) {
-		// ask it to resign and call the cb
-		p.resignPremier(f);
-	} else f(); // no existing premier
-	return this;
+  var p, f = function() {
+      this.isPremier = true;
+      sudo.premier = this;
+    }.bind(this);
+  // is there an existing premier that isn't me?
+  if((p = sudo.premier) && p.uid !== this.uid) {
+    // ask it to resign and call the cb
+    p.resignPremier(f);
+  } else f(); // no existing premier
+  return this;
 };
 // ###init
 // A 'contruction-time' hook to call for further initialization needs in 
@@ -54,13 +54,13 @@ sudo.View.prototype.init = $.noop;
 // the el needs to be normalized before use
 // `private`
 sudo.View.prototype._normalizedEl_ = function _normalizedEl_(el) {
-	if(typeof el === 'string') {
-		return $(el);
-	} else {
-		// Passed an already `jquerified` Element?
-		// It will have a length of 1 if so.
-		return el.length ? el : $(el);
-	}	
+  if(typeof el === 'string') {
+    return $(el);
+  } else {
+    // Passed an already `jquerified` Element?
+    // It will have a length of 1 if so.
+    return el.length ? el : $(el);
+  }	
 };
 // ### resignPremier
 // Resign premier status
@@ -69,15 +69,15 @@ sudo.View.prototype._normalizedEl_ = function _normalizedEl_(el) {
 // after resigning premier status.
 // `returns` {Object} `this`
 sudo.View.prototype.resignPremier = function resignPremier(cb) {
-	var p;
-	this.isPremier = false;
-	// only remove the global premier if it is me
-	if((p = sudo.premier) && p.uid === this.uid) {
-		sudo.premier = null;
-	}
-	// fire the cb if passed
-	if(cb) cb();
-	return this;
+  var p;
+  this.isPremier = false;
+  // only remove the global premier if it is me
+  if((p = sudo.premier) && p.uid === this.uid) {
+    sudo.premier = null;
+  }
+  // fire the cb if passed
+  if(cb) cb();
+  return this;
 };
 // `private`
 sudo.View.prototype.role = 'view';
@@ -89,16 +89,16 @@ sudo.View.prototype.role = 'view';
 // `param` {string=|element} `el`
 // `returns` {Object} `this`
 sudo.View.prototype.setEl = function setEl(el) {
-	var d = this.model && this.model.data, a, t;
-	if(!el) {
-		// normalize any relevant data
-		t = d ? d.tagName || 'div': 'div';
-		this.$el = $(document.createElement(t));
-		if(d && (a = d.attributes)) this.$el.attr(a);
-	} else {
-		this.$el = this._normalizedEl_(el);
-	}
-	return this;
+  var d = this.model && this.model.data, a, t;
+  if(!el) {
+    // normalize any relevant data
+    t = d ? d.tagName || 'div': 'div';
+    this.$el = $(document.createElement(t));
+    if(d && (a = d.attributes)) this.$el.attr(a);
+  } else {
+    this.$el = this._normalizedEl_(el);
+  }
+  return this;
 };
 // ###this.$
 // Return a single Element matching `sel` scoped to this View's el.
@@ -107,5 +107,5 @@ sudo.View.prototype.setEl = function setEl(el) {
 // `param` {string} `sel`. A jQuery compatible selector
 // `returns` {jQuery} A 'jquerified' result matching the selector
 sudo.View.prototype.$ = function(sel) {
-	return this.$el.find(sel);
+  return this.$el.find(sel);
 };

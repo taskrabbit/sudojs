@@ -5,9 +5,9 @@
 //
 // `constructor`
 sudo.Container = function() {
-	sudo.Base.call(this);
-	this.children = [];
-	this.childNames = {};
+  sudo.Base.call(this);
+  this.children = [];
+  this.childNames = {};
 };
 // Container is a subclass of sudo.Base
 sudo.inherit(sudo.Base, sudo.Container);
@@ -20,16 +20,16 @@ sudo.inherit(sudo.Base, sudo.Container);
 // `param` {String} `name`. An optional name for the child that will go in the childNames hash.
 // `returns` {Object} `this`
 sudo.Container.prototype.addChild = function addChild(child, name) {
-	var c = this.children;
-	child.parent = this;
-	child.index = c.length;
-	if(name) {
-		child.name = name;
-		this.childNames[name] = child.index;
-	}
-	c.push(child);
-	if('addedToParent' in child) child.addedToParent(this);
-	return this;
+  var c = this.children;
+  child.parent = this;
+  child.index = c.length;
+  if(name) {
+    child.name = name;
+    this.childNames[name] = child.index;
+  }
+  c.push(child);
+  if('addedToParent' in child) child.addedToParent(this);
+  return this;
 };
 // ###bubble
 // By default, `bubble` returns the current view's parent (if it has one)
@@ -44,8 +44,8 @@ sudo.Container.prototype.bubble = function bubble() {return this.parent;};
 // `param` {String|Number} `id`. The string `name` or numeric `index` of the child to fetch.
 // `returns` {Object|undefined} The found child
 sudo.Container.prototype.getChild = function getChild(id) {
-	return typeof id === 'string' ? this.children[this.childNames[id]] :
-		this.children[id];
+  return typeof id === 'string' ? this.children[this.childNames[id]] :
+    this.children[id];
 };
 // ###_indexChildren_
 // Method is called with the `index` property of a subview that is being removed.
@@ -53,12 +53,12 @@ sudo.Container.prototype.getChild = function getChild(id) {
 // `param` {Number} `i`
 // `private`
 sudo.Container.prototype._indexChildren_ = function _indexChildren_(i) {
-	var c = this.children, obj = this.childNames, len;
-	for (len = c.length; i < len; i++) {
-		c[i].index--;
-		// adjust any entries in childNames
-		if(c[i].name in obj) obj[c[i].name] = c[i].index; 
-	}
+  var c = this.children, obj = this.childNames, len;
+  for (len = c.length; i < len; i++) {
+    c[i].index--;
+    // adjust any entries in childNames
+    if(c[i].name in obj) obj[c[i].name] = c[i].index; 
+  }
 };
 // ###removeChild
 // Find the intended child from my list of children and remove it, removing the name reference and re-indexing
@@ -70,21 +70,21 @@ sudo.Container.prototype._indexChildren_ = function _indexChildren_(i) {
 // An object will be assumed to be an actual sudo Class Object.
 // `returns` {Object} `this`
 sudo.Container.prototype.removeChild = function removeChild(arg) {
-	var i, t = typeof arg, c;
-	// normalize the input
-	if(t === 'object') c = arg; 
-	else c = t === 'string' ? this.children[this.childNames[arg]] : this.children[arg];
-	i = c.index;
-	// remove from the children Array
-	this.children.splice(i, 1);
-	// remove from the named child hash if present
-	delete this.childNames[c.name];
-	// child is now an `orphan`
-	delete c.parent;
+  var i, t = typeof arg, c;
+  // normalize the input
+  if(t === 'object') c = arg; 
+  else c = t === 'string' ? this.children[this.childNames[arg]] : this.children[arg];
+  i = c.index;
+  // remove from the children Array
+  this.children.splice(i, 1);
+  // remove from the named child hash if present
+  delete this.childNames[c.name];
+  // child is now an `orphan`
+  delete c.parent;
   delete c.index;
   delete c.name;
-	this._indexChildren_(i);
-	return this;
+  this._indexChildren_(i);
+  return this;
 };
 // ###removeChildren
 // Remove all children, name references and adjust indexes accordingly.
@@ -92,19 +92,19 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 //
 // `returns` {object} `this`
 sudo.Container.prototype.removeChildren = function removeChildren() {
-	while(this.children.length) {
-		this.children.shift().removeFromParent();
-	}
-	return this;
+  while(this.children.length) {
+    this.children.shift().removeFromParent();
+  }
+  return this;
 };
 // ###removeFromParent
 // Remove this object from its parents list of children.
 // Does not alter the dom - do that yourself by overriding this method
 // or chaining method calls
 sudo.Container.prototype.removeFromParent = function removeFromParent() {
-	// will error without a parent, but that would be your fault...
-	this.parent.removeChild(this);
-	return this;
+  // will error without a parent, but that would be your fault...
+  this.parent.removeChild(this);
+  return this;
 };
 sudo.Container.prototype.role = 'container';
 // ###send
@@ -125,29 +125,29 @@ sudo.Container.prototype.role = 'container';
 // Any other args will be passed to the sendMethod after `this`
 // `returns` {Object} `this`
 sudo.Container.prototype.send = function send(/*args*/) {
-	var args = Array.prototype.slice.call(arguments),
-		d = this.model && this.model.data, meth, targ, fn;
-	// normalize the input, common use cases first
-	if(d && 'sendMethod' in d) meth = d.sendMethod;
-	else if(typeof args[0] === 'string') meth = args.shift();
-	// less common but viable options
-	if(!meth) {
-		// passed as a jquery custom data attr bound in events
-		meth = 'data' in args[0] ? args[0].data.sendMethod :
-			// passed in a hash from something or not passed at all
-			args[0].sendMethod || void 0;
-	}
-	// target is either specified or my parent
-	targ = d && d.sendTarget || this.bubble();
-	// obvious chance for errors here, don't be dumb
-	fn = targ[meth];
-	while(!fn && (targ = targ.bubble())) {
-		fn = targ[meth];
-	}
-	// sendMethods expect a signature (sender, ...)
-	if(fn) {
-		args.unshift(this);
-		fn.apply(targ, args);
-	}
-	return this;
+  var args = Array.prototype.slice.call(arguments),
+    d = this.model && this.model.data, meth, targ, fn;
+  // normalize the input, common use cases first
+  if(d && 'sendMethod' in d) meth = d.sendMethod;
+  else if(typeof args[0] === 'string') meth = args.shift();
+  // less common but viable options
+  if(!meth) {
+    // passed as a jquery custom data attr bound in events
+    meth = 'data' in args[0] ? args[0].data.sendMethod :
+      // passed in a hash from something or not passed at all
+      args[0].sendMethod || void 0;
+  }
+  // target is either specified or my parent
+  targ = d && d.sendTarget || this.bubble();
+  // obvious chance for errors here, don't be dumb
+  fn = targ[meth];
+  while(!fn && (targ = targ.bubble())) {
+    fn = targ[meth];
+  }
+  // sendMethods expect a signature (sender, ...)
+  if(fn) {
+    args.unshift(this);
+    fn.apply(targ, args);
+  }
+  return this;
 };
