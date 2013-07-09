@@ -339,13 +339,18 @@ sudo.Model.prototype.unsets = function unsets(ary) {
 // ##Container Class Object
 //
 // A container is any object that can both contain other objects and
-// itself be contained
+// itself be contained.
+//
+// `param` {Array|Object} 'arg'. Optional array or hash
+// of child objects which the Container will add as child objects
+// via `addChildren`
 //
 // `constructor`
-sudo.Container = function() {
+sudo.Container = function(arg) {
   sudo.Base.call(this);
   this.children = [];
   this.childNames = {};
+  if(arg) this.addChildren(arg);
 };
 // Container is a subclass of sudo.Base
 sudo.inherit(sudo.Base, sudo.Container);
@@ -367,6 +372,30 @@ sudo.Container.prototype.addChild = function addChild(child, name) {
   }
   c.push(child);
   if('addedToParent' in child) child.addedToParent(this);
+  return this;
+};
+// ###addChildren
+// Allows for multiple children to be added to this Container by passing
+// either an Array or an Object literal.
+//
+// see `addChild`
+//
+// `param` {Array|Object} `arg`. An array of children to add or an
+// Object literal in the form {name: child}
+// `returns` {Object} `this` 
+sudo.Container.prototype.addChildren = function addChildren(arg) {
+  var i, keys;
+  // Array?
+  if(Array.isArray(arg)) {
+    for (i = 0; i < arg.length; i++) {
+      this.addChild(arg[i]);
+    }
+  } else {
+    keys = Object.keys(arg);
+    for (i = 0; i < keys.length; i++) {
+      this.addChild(arg[keys[i]] , keys[i]);
+    }
+  }
   return this;
 };
 // ###bubble
@@ -427,6 +456,8 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 // ###removeChildren
 // Remove all children, name references and adjust indexes accordingly.
 // This method calls removeFromParent as each child may have overridden logic there.
+//
+// see `removeChild`
 //
 // `returns` {object} `this`
 sudo.Container.prototype.removeChildren = function removeChildren() {
