@@ -31,12 +31,17 @@ describe('Sudo Container Class', function() {
     expect(container.children.length).toBe(2);
   });
   
-  it('Adds many children via an array', function() {
+  it('Adds many children via an object literal', function() {
     var obj = {'Galahad': child1, 'Robin': child2};
     container.addChildren(obj);
     expect(container.children.length).toBe(2);
     expect(container.getChild('Galahad')).toBeTruthy();
     expect(container.getChild('Robin')).toBeTruthy();
+  });
+
+  it('Adds children passed to the constructor', function() {
+    var c = new _.Container([child1, child2]);
+    expect(c.children.length).toBe(2);
   });
 
   it('Can fetch a child by index or name', function() {
