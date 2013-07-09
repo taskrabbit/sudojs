@@ -31,6 +31,22 @@ sudo.Container.prototype.addChild = function addChild(child, name) {
   if('addedToParent' in child) child.addedToParent(this);
   return this;
 };
+// Comment
+sudo.Container.prototype.addChildren = function addChildren(arg) {
+  var i, keys;
+  // Array?
+  if(Array.isArray(arg)) {
+    for (i = 0; i < arg.length; i++) {
+      this.addChild(arg[i]);
+    }
+  } else {
+    keys = Object.keys(arg);
+    for (i = 0; i < keys.length; i++) {
+      this.addChild(arg[keys[i]] , keys[i]);
+    }
+  }
+  return this;
+};
 // ###bubble
 // By default, `bubble` returns the current view's parent (if it has one)
 //

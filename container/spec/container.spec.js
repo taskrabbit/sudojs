@@ -25,6 +25,20 @@ describe('Sudo Container Class', function() {
     expect(container.$el.html()).toBeFalsy();
   });
 
+  it('Adds many children via an array', function() {
+    var ary = [child1 , child2];
+    container.addChildren(ary);
+    expect(container.children.length).toBe(2);
+  });
+  
+  it('Adds many children via an array', function() {
+    var obj = {'Galahad': child1, 'Robin': child2};
+    container.addChildren(obj);
+    expect(container.children.length).toBe(2);
+    expect(container.getChild('Galahad')).toBeTruthy();
+    expect(container.getChild('Robin')).toBeTruthy();
+  });
+
   it('Can fetch a child by index or name', function() {
     container.addChild(child1, 'Galahad').addChild(child2, 'Robin');
     expect(container.getChild(0).uid).toBe(cid1);
