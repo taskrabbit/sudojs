@@ -56,6 +56,8 @@ sudo.DataView.prototype.build = function build() {
 // `returns` {Object} `this`
 sudo.DataView.prototype.removeFromParent = function removeFromParent() {
   this.parent.removeChild(this);
+  // all events need to be unbound to avoid memory leaks
+  this.unbindEvents();
   this.$el.remove();
   return this;
 };
