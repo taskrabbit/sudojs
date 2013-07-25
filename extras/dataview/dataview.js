@@ -25,7 +25,6 @@ sudo.DataView = function(el, data) {
   // use this ref to unobserve if desired
   if(this.model.data.autoRender) this.observer = this.model.observe(this.render.bind(this));
   this.build();
-  this.bindEvents();
   if(this.role === 'dataview') this.init();
 };
 // `private`
@@ -33,8 +32,9 @@ sudo.inherit(sudo.View, sudo.DataView);
 // ###addedToParent
 // Container's will check for the presence of this method and call it if it is present
 // after adding a child - essentially, this will auto render the dataview when added to a parent
+// as well as setup the events
 sudo.DataView.prototype.addedToParent = function(parent) {
-  return this.render();
+  return this.bindEvents().render();
 };
 // ###build
 // Construct the innerHTML of the $el here so that the behavior of the
@@ -57,8 +57,7 @@ sudo.DataView.prototype.build = function build() {
 sudo.DataView.prototype.removeFromParent = function removeFromParent() {
   this.parent.removeChild(this);
   // all events need to be unbound to avoid memory leaks
-  this.unbindEvents();
-  this.$el.remove();
+  this.unbindEvents().$el.remove();
   return this;
 };
 // ###render
