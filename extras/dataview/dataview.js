@@ -32,9 +32,13 @@ sudo.inherit(sudo.View, sudo.DataView);
 // ###addedToParent
 // Container's will check for the presence of this method and call it if it is present
 // after adding a child - essentially, this will auto render the dataview when added to a parent
-// as well as setup the events
+// if not an autoRender (which will render on model change), as well as setup the events (in children too)
 sudo.DataView.prototype.addedToParent = function(parent) {
-  return this.bindEvents().render();
+  this.bindEvents();
+  this.eachChild('bindEvents');
+  // autoRender Dataviews should only render on model change
+  if(!this.model.data.autoRender) return this.render();
+  return this;
 };
 // ###build
 // Construct the innerHTML of the $el here so that the behavior of the
@@ -49,15 +53,18 @@ sudo.DataView.prototype.build = function build() {
   this.built = true;
   return this;
 };
+
 // ###removeFromParent
 // Remove this object from the DOM and its parent's list of children.
-// Overrides `sudo.View.removeFromParent` to actually remove the DOM as well
+// Overrides `sudo.View.removeFromParent` to unbind events and remove its $el 
+// as well if passed a truthy value otherwise will $.detach its $el
 //
+// `param` {bool} `remove` should this Object $el.remove or $el.detach?
 // `returns` {Object} `this`
-sudo.DataView.prototype.removeFromParent = function removeFromParent() {
+sudo.DataView.prototype.removeFromParent = function removeFromParent(remove) {
   this.parent.removeChild(this);
-  // all events need to be unbound to avoid memory leaks
-  this.unbindEvents().$el.remove();
+  this.unbindEvents().$el[remove ? 'remove' : 'detach']();
+  this.eachChild('unbindEvents');
   return this;
 };
 // ###render

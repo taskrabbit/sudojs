@@ -100,5 +100,20 @@ describe('Sudo Container Class', function() {
     expect(container.$('#theChaste').length).toBeFalsy();
     expect(container.$('#theBrave').length).toBeFalsy();
   });
+
+  it('uses the eachChild method correctly', function() {
+      var foo = function(arg) {}, spy1, spy2;
+      child1.bar = foo;
+      child2.bar = foo;
+
+      spy1 = spyOn(child1, 'bar');
+      spy2 = spyOn(child2, 'bar');
+
+      container.addChildren([child1, child2]);
+      container.eachChild('bar', 'baz');
+
+      expect(spy1).toHaveBeenCalledWith('baz');
+      expect(spy2).toHaveBeenCalledWith('baz');
+  });
   
 });

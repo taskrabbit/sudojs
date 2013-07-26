@@ -65,6 +65,22 @@ sudo.Container.prototype.addChildren = function addChildren(arg) {
 //
 // `returns` {Object|undefined}
 sudo.Container.prototype.bubble = function bubble() {return this.parent;};
+// ###eachChild
+// Call a named method and pass any args to each child in a container's
+// collection of children
+//
+// `param` {*} Any number of arguments the first of which must be
+// The named method to look for and call. Other args are passed through
+// `returns` {object} `this`
+sudo.Container.prototype.eachChild = function eachChild(/*args*/) {
+  var args = Array.prototype.slice.call(arguments), 
+    which = args.shift(), i, len, curr;
+  for (i = 0, len = this.children.length; i < len; i++) {
+    curr = this.children[i];
+    if(which in curr) curr[which].apply(curr, args);
+  }
+  return this;
+};
 // ###getChild
 // If a child was added with a name, via `addChild`,
 // that object can be fetched by name. This prevents us from having to reference a 
