@@ -24,7 +24,8 @@ sudo.DataView = function(el, data) {
   // if autorendering, observe your own model
   // use this ref to unobserve if desired
   if(this.model.data.autoRender) this.observer = this.model.observe(this.render.bind(this));
-  this.build();
+  // only call the initial build if not an autoRender type
+  else this.build();
   if(this.role === 'dataview') this.init();
 };
 // `private`

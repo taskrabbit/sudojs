@@ -28,8 +28,8 @@ describe('sudo.js Dataview Object', function() {
       '</div>'
   });
 
-  it('exists with the inner content', function() {
-    expect(dv.$el.html()).toBeTruthy();
+  it('!exists with the inner content', function() {
+    expect(dv.$el.html()).toBeFalsy();
   });
 
   it('renders correctly', function() {
