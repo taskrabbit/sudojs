@@ -36,7 +36,6 @@ sudo.inherit(sudo.View, sudo.DataView);
 // if not an autoRender (which will render on model change), as well as setup the events (in children too)
 sudo.DataView.prototype.addedToParent = function(parent) {
   this.bindEvents();
-  this.eachChild('bindEvents');
   // autoRender Dataviews should only render on model change
   if(!this.model.data.autoRender) return this.render();
   return this;
@@ -65,7 +64,6 @@ sudo.DataView.prototype.build = function build() {
 sudo.DataView.prototype.removeFromParent = function removeFromParent(remove) {
   this.parent.removeChild(this);
   this.unbindEvents().$el[remove ? 'remove' : 'detach']();
-  this.eachChild('unbindEvents');
   return this;
 };
 // ###render
