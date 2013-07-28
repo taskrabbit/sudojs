@@ -475,10 +475,12 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 //
 // see `removeChild`
 //
+// `param` {bool} `keep` Optional arg to instruct the parent to `detach` its $el
+// rather than the default `remove` if truthy
 // `returns` {object} `this`
-sudo.Container.prototype.removeChildren = function removeChildren() {
+sudo.Container.prototype.removeChildren = function removeChildren(keep) {
   while(this.children.length) {
-    this.children.shift().removeFromParent();
+    this.children.shift().removeFromParent(keep);
   }
   return this;
 };
@@ -932,14 +934,15 @@ sudo.DataView.prototype.build = function build() {
 
 // ###removeFromParent
 // Remove this object from the DOM and its parent's list of children.
-// Overrides `sudo.View.removeFromParent` to unbind events and remove its $el 
-// as well if passed a truthy value otherwise will $.detach its $el
+// Overrides `sudo.View.removeFromParent` to unbind events and `remove` its $el 
+// as well if not passed a truthy value as 'keep', will `detach` its $el in that case
 //
-// `param` {bool} `remove` should this Object $el.remove or $el.detach?
+// `param` {bool} `keep` Optional arg to Call `detach` if truthy, `remove` by default
+// (if omitted or falsy)
 // `returns` {Object} `this`
-sudo.DataView.prototype.removeFromParent = function removeFromParent(remove) {
+sudo.DataView.prototype.removeFromParent = function removeFromParent(keep) {
   this.parent.removeChild(this);
-  this.unbindEvents().$el[remove ? 'remove' : 'detach']();
+  this.unbindEvents().$el[keep ? 'detach' : 'remove']();
   return this;
 };
 // ###render

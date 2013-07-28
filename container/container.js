@@ -137,10 +137,12 @@ sudo.Container.prototype.removeChild = function removeChild(arg) {
 //
 // see `removeChild`
 //
+// `param` {bool} `keep` Optional arg to instruct the parent to `detach` its $el
+// rather than the default `remove` if truthy
 // `returns` {object} `this`
-sudo.Container.prototype.removeChildren = function removeChildren() {
+sudo.Container.prototype.removeChildren = function removeChildren(keep) {
   while(this.children.length) {
-    this.children.shift().removeFromParent();
+    this.children.shift().removeFromParent(keep);
   }
   return this;
 };
