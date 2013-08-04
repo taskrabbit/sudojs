@@ -45,7 +45,8 @@ Filereader.prototype.parseHtmlFile = function() {
  * @private
  */
 Filereader.prototype._parseScriptSources = function(errors, window) {
-  var i, scripts = window.document.getElementsByTagName('script'),
+  var i, version = window.document.getElementsByTagName('title')[0].textContent, 
+    scripts = window.document.getElementsByTagName('script'),
     ary = this.get('script_sources');
   for (i = 0; i < scripts.length; i++) {
     // should be document order
@@ -54,7 +55,7 @@ Filereader.prototype._parseScriptSources = function(errors, window) {
   // done with the window
   window.close();
   // observe this so we know when jsdom is finished
-  this.set('scripts_parsed', true);
+  this.sets({version: version, scripts_parsed: true});
 };
 
 Filereader.prototype.readHtmlFile = function() {

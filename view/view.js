@@ -7,12 +7,12 @@
 // based on the `tagName` (`div` by default). Specify `className`, `id` (or other attributes if desired)
 // as an (optional) `attributes` object literal on the `data` arg.
 //
-// The view object uses jquery for dom manipulation
-// and event delegation etc... A jquerified `this` reference is located
+// The view object uses zepto for dom manipulation
+// and event delegation etc... A querified `this` reference is located
 // at `this.$el` and `this.$` scopes queries to this objects `el`, i.e it's
 // a shortcut for `this.$el.find(selector)`
 //
-// `param` {string|element|jQuery} `el`. Otional el for the View instance.
+// `param` {string|element|Query} `el`. Otional el for the View instance.
 // `param` {Object} `data`. Optional data object-literal which becomes the initial state
 // of a new model located at `this.model`. Also can be a reference to an existing sudo.Model instance
 //
@@ -57,7 +57,7 @@ sudo.View.prototype._normalizedEl_ = function _normalizedEl_(el) {
   if(typeof el === 'string') {
     return $(el);
   } else {
-    // Passed an already `jquerified` Element?
+    // Passed an already `querified` Element?
     // It will have a length of 1 if so.
     return el.length ? el : $(el);
   }	
@@ -83,7 +83,7 @@ sudo.View.prototype.resignPremier = function resignPremier(cb) {
 sudo.View.prototype.role = 'view';
 // ###setEl
 // A view must have an element, set that here.
-// Stores a jquerified object as `this.$el` the raw
+// Stores a querified object as `this.$el` the raw
 // node is always then available as `this.$el[0]`.
 //
 // `param` {string=|element} `el`
@@ -104,8 +104,8 @@ sudo.View.prototype.setEl = function setEl(el) {
 // Return a single Element matching `sel` scoped to this View's el.
 // This is an alias to `this.$el.find(sel)`.
 //
-// `param` {string} `sel`. A jQuery compatible selector
-// `returns` {jQuery} A 'jquerified' result matching the selector
+// `param` {string} `sel`. A Query compatible selector
+// `returns` {Query} A 'querified' result matching the selector
 sudo.View.prototype.$ = function(sel) {
   return this.$el.find(sel);
 };

@@ -26,7 +26,7 @@ sudo.extensions.persistable = {
   // state of the model on the server and set it here (via a success callback).
   //
   // `param` {object} `params` Hash of options for the XHR call
-  // `returns` {object} The jQuery XHR object
+  // `returns` {object} The XHR object
   create: function create(params) {
     return this._sendData_('POST', params);
   },
@@ -35,7 +35,7 @@ sudo.extensions.persistable = {
   // Delete this model on the server
   //
   // `param` {object} `params` Optional hash of options for the XHR
-  // `returns` {object} jqXhr
+  // `returns` {object} Xhr
   destroy: function destroy(params) {
     return this._sendData_('DELETE', params);
   },
@@ -52,10 +52,15 @@ sudo.extensions.persistable = {
     opts.url || (opts.url = this.url(opts.baseUrl));
     opts.type || (opts.type = meth);
     opts.dataType || (opts.dataType = 'json');
+    var isJson = opts.dataType === 'json';
+    // by default turn off the global ajax triggers as all data
+    // should flow thru the models to their observers
+    opts.global || (opts.global = false);
     // the default success callback is to set the data returned from the server
     // or just the status as `ajaxStatus` if no data was returned
-    opts.success || (opts.success = function(data, status, jqXhr) {
-      data ? this.sets(data) : this.set('ajaxStatus', status);
+    opts.success || (opts.success = function(data, status, xhr) {
+      data ? this.sets((isJson && typeof data === 'string') ? JSON.parse(data) : data) : 
+        this.set('ajaxStatus', status);
     }.bind(this));
     // allow the passed in params to override any set in this model's `ajax` options
     return params ? $.extend(opts, params) : opts;
@@ -71,7 +76,7 @@ sudo.extensions.persistable = {
   //
   // `param` {object} `params`. Optional info for the XHR call. If
   // present will override any set in this model's `ajax` options object.
-  // `returns` {object} The jQuery XHR object
+  // `returns` {object} The XHR object
   read: function read(params) {
     return $.ajax(this._normalizeParams_('GET', null, params));
   },
@@ -81,7 +86,7 @@ sudo.extensions.persistable = {
   // or has been loaded/refreshed from the server. 
   //
   // `param` {object} `params` Hash of options for the XHR call
-  // `returns` {object} The jQuery XHR object
+  // `returns` {object} The XHR object
   save: function save(params) {
     return ('id' in this.data) ? this.update(params) : this.create(params);
   },
@@ -89,11 +94,15 @@ sudo.extensions.persistable = {
   // The Create, Update and Patch methods all send data to the server,
   // varying only in their HTTP method. Abstracted logic is here.
   //
-  // `returns` {object} jqXhr
+  // `returns` {object} Xhr
   _sendData_: function _sendData_(meth, params) {
     opts = $.extend({}, this.data.ajax);
     opts.contentType || (opts.contentType = 'application/json');
     opts.data || (opts.data = this.data);
+    // assure that, in the default json case, opts.data is json
+    if(opts.contentType === 'application/json' && (typeof opts.data !== 'string')) {
+      opts.data = JSON.stringify(opts.data); 
+    }
     // non GET requests do not 'processData'
     if(!('processData' in opts)) opts.processData = false;
     return $.ajax(this._normalizeParams_(meth, opts, params));
@@ -109,7 +118,7 @@ sudo.extensions.persistable = {
   // or use the `save()` method (that does check).
   //
   // `param` {object} `params` Optional hash of options for the XHR
-  // `returns` {object|bool} the jqXhr if called false if not
+  // `returns` {object|bool} the Xhr if called false if not
   update: function update(params) {
     return this._sendData_((this.data.ajax.patch || params && params.patch) ? 
       'PATCH' : 'PUT', params);

@@ -112,9 +112,6 @@ serve the spec runner at `localhost:5678/specRunner.html`. This is useful, for m
 testing as I can just point virtual machines at the host. Note that individual spec files can be run from here as well, just
 adjust the path accordingly. The `sudo.Base` module for example could be run at `localhost:5678/base/specRunner.html`
 
-Also note that the `lib/jquery` folder in no way indicates a dependency on _that_ particular version of `jQuery`. It
-is there simply so I can run tests offline (which I usually write while riding Caltrain [no wifi]).
-
 ## Rails Gem
 
 A rather opinionated gem is available [here](https://github.com/robrobbins/sudojs-rails). More than just making sudo builds
@@ -135,13 +132,13 @@ The latest concatonated (but unminified) version of `sudo.js` (and `sudo-x.js` [
 located in `build/debug`. If you are making changes, adding new modules, or creating a custom build and need the `debug/`
 files to be rebuilt `cd` into the `build/lib` directory and run:
 
-    node run.js [0.x.x] [sudo.html] [sudo-x.html] [foo.html] ...
+    node run sudo.html [sudo-basic.html] [foo.html] ...
 
 Note that the `foo.html` above would represent an HTML configuration file you created for a custom build of sudo.js.
 
 You will need `Node.js` installed as well as the `sudoclass` module mentioned above. The arguments that follow the invocation of
-`run.js` are a _version number_ and the html files that the build tool uses to load the 'modules'. If you are adding new 'modules'
-be sure to add them to sudo.html (and/or the sudo-x.html) config file or they will not be added to the concatonated `debug/` file(s).
+`run` are the html files that the build tool uses to load the 'modules'. If you are adding new 'modules'
+be sure to add them to sudo.html (and/or other foo.html) config file(s) or they will not be added to the concatonated `debug/` file(s).
 
 ### Extras
 

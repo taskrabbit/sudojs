@@ -2,6 +2,9 @@ describe('Sudo Model persistance', function() {
   // stub the $.ajax fn to simply return the passed `data`
   // to the passed `success`, or call `error` etc...
   $.ajax = function(opts) {
+    // by this point all the data has been stringified
+    if(opts.data && (typeof opts.data === 'string')) opts.data = JSON.parse(opts.data);
+
     switch(opts.type) {
       case 'POST':
         opts.data.id = 42;
@@ -51,8 +54,8 @@ describe('Sudo Model persistance', function() {
 
   it('Will POST the passed in data vs the model itself', function() {
     model.set('onQuest', true).create({
-      data: JSON.stringify(model.data),
-      success: function(data, status, jqxhr) {
+      data: model.data,
+      success: function(data, status, xhr) {
         this.sets({
           ajaxStatus: status,
           json: data
@@ -60,7 +63,7 @@ describe('Sudo Model persistance', function() {
       }.bind(model)
     });
       
-    expect(typeof (model.get('json'))).toBe('string');
+    expect(typeof (model.get('json'))).toBe('object');
     expect(model.get('ajaxStatus')).toBe('200 OK');
   });
 

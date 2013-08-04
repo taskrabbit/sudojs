@@ -37,7 +37,7 @@ describe('sudo.js View Object', function() {
     expect(v2.$el.data('foo')).toBe('bar');
   });
 
-  it('detects a non jquerified el passed to it', function() {
+  it('detects a non querified el passed to it', function() {
     var d = document.createElement('p');
     var v3 = new _.View(d);
     expect(v3.$el.length).toEqual(1);

@@ -519,7 +519,7 @@ sudo.Container.prototype.send = function send(/*args*/) {
   else if(typeof args[0] === 'string') meth = args.shift();
   // less common but viable options
   if(!meth) {
-    // passed as a jquery custom data attr bound in events
+    // passed as a custom data attr bound in events
     meth = 'data' in args[0] ? args[0].data.sendMethod :
       // passed in a hash from something or not passed at all
       args[0].sendMethod || void 0;
@@ -547,12 +547,12 @@ sudo.Container.prototype.send = function send(/*args*/) {
 // based on the `tagName` (`div` by default). Specify `className`, `id` (or other attributes if desired)
 // as an (optional) `attributes` object literal on the `data` arg.
 //
-// The view object uses jquery for dom manipulation
-// and event delegation etc... A jquerified `this` reference is located
+// The view object uses zepto for dom manipulation
+// and event delegation etc... A querified `this` reference is located
 // at `this.$el` and `this.$` scopes queries to this objects `el`, i.e it's
 // a shortcut for `this.$el.find(selector)`
 //
-// `param` {string|element|jQuery} `el`. Otional el for the View instance.
+// `param` {string|element|Query} `el`. Otional el for the View instance.
 // `param` {Object} `data`. Optional data object-literal which becomes the initial state
 // of a new model located at `this.model`. Also can be a reference to an existing sudo.Model instance
 //
@@ -597,7 +597,7 @@ sudo.View.prototype._normalizedEl_ = function _normalizedEl_(el) {
   if(typeof el === 'string') {
     return $(el);
   } else {
-    // Passed an already `jquerified` Element?
+    // Passed an already `querified` Element?
     // It will have a length of 1 if so.
     return el.length ? el : $(el);
   }	
@@ -623,7 +623,7 @@ sudo.View.prototype.resignPremier = function resignPremier(cb) {
 sudo.View.prototype.role = 'view';
 // ###setEl
 // A view must have an element, set that here.
-// Stores a jquerified object as `this.$el` the raw
+// Stores a querified object as `this.$el` the raw
 // node is always then available as `this.$el[0]`.
 //
 // `param` {string=|element} `el`
@@ -644,135 +644,11 @@ sudo.View.prototype.setEl = function setEl(el) {
 // Return a single Element matching `sel` scoped to this View's el.
 // This is an alias to `this.$el.find(sel)`.
 //
-// `param` {string} `sel`. A jQuery compatible selector
-// `returns` {jQuery} A 'jquerified' result matching the selector
+// `param` {string} `sel`. A Query compatible selector
+// `returns` {Query} A 'querified' result matching the selector
 sudo.View.prototype.$ = function(sel) {
   return this.$el.find(sel);
 };
-// ##ViewController Class Object
-
-// ViewControllers were designed for Rails projects for 2 specific use-cases:
-//
-// 1. ViewControllers can instantiate any `descriptors` found in their model
-// when constructing, adding them as `child` objects. Why? Sometimes a 'partial' will
-// need to define a javascript object that should, by design, be the child of a parent View
-// that is itself defined on the Rails view that owns the 'partial'. Since any JS introduced
-// by a partial will be parsed before the JS on its parent Rails View this usually isn't possible.
-// Our solution? Pushing `Descriptor objects` (see docs) into an array (somewhere in your namespace) from a 
-// 'partial' and then passing a reference to that array into the ViewController as 'descriptors'
-// in its optional data argument when instantiated. The ViewController will then iterate over those 
-// and instantiate them, adding them as children as it goes (also setting up any stated observers)
-//
-// 2. ViewControllers also abstract away connecting UJS style events by allowing the developer to
-// pass in the name(s) of any desired UJS events to observe: `ujsEvent: ajax:success` for example, 
-// and expect that a method named onAjaxSuccess, if present on the ViewController, will be called
-// with the arguments returned by the UJS plugin*
-//
-// `param` {string|element} `el`. Otional el for the View instance.
-// `param` {object} `data`. Optional data object.
-//
-// `see` sudo.View.
-//
-// `constructor`
-sudo.ViewController = function(el, data) {
-  sudo.View.call(this, el, data);
-  // map the names of events to methods we expect to proxy to
-  this.eventMap = {
-    'ajax:before': 'onAjaxBefore',
-    'ajax:beforeSend': 'onAjaxBeforeSend',
-    'ajax:success': 'onAjaxSuccess',
-    'ajax:error': 'onAjaxError',
-    'ajax:complete': 'onAjaxComplete',
-    'ajax:aborted:required': 'onAjaxAbortedRequired',
-    'ajax:aborted:file': 'onAjaxAbortedFile'
-  };
-  // can be called again if mapping changes... 
-  if(data) {
-    this.doMapping();
-    if('descriptor' in data) this.instantiateChildren([data.descriptor]);
-    else if('descriptors' in data) this.instantiateChildren();
-  }
-  if(this.role === 'viewController') this.init();
-};
-// ViewController inherits from View.
-// `private`
-sudo.inherit(sudo.View, sudo.ViewController);
-// ###doMapping
-//
-// assign the proxy mapping for events. This can be called at any time
-// if the listened for events change
-//
-// `returns` {Object} `this`
-sudo.ViewController.prototype.doMapping = function() {
-  // either a single event or an array of them
-  var i,
-    toMap = this.model.data.ujsEvent || this.model.data.ujsEvents;
-  if(toMap) {
-    if(typeof toMap === 'string') this._mapEvent_(toMap);
-    else {
-      for(i = 0; i < toMap.length; i++) {
-        this._mapEvent_(toMap[i]);
-      }
-    }
-  }
-  return this;
-};
-// ###_handleObserve_
-// Helper for instantiateChildren
-// `private`
-sudo.ViewController.prototype._handleObserve_ = function _handleObserve_(obs, c) {
-  var obj = obs.object ? this._objectForPath_(obs.object) : this.model;
-  obj.observe(c[obs.cb].bind(c));
-};
-// ###instantiateChildren
-// instantiate the children described in the passed in array or the `descriptors` array
-// set in this object's data store
-//
-// `returns` {object} `this`
-sudo.ViewController.prototype.instantiateChildren = function instantiateChildren(ary) {
-  var i, j, curr, c, d = ary || this.model.data.descriptors;
-  for(i = 0; i < d.length; i++) {
-    curr = d[i]; 
-    c = new curr.is_a(curr.el, curr.data);
-    this.addChild(c, curr.name);
-    // handle any observe(s)
-    if('observe' in curr) {
-      this._handleObserve_(curr.observe, c);
-    }
-    else if('observes' in curr) {
-      for(j = 0; j < curr.observes.length; j++) {
-        this._handleObserve_(curr.observes[j], c);
-      }
-    }
-  }
-  return this;
-};
-// ###_mapEvent_
-// Maps the ajax:event names to methods
-// `private`
-sudo.ViewController.prototype._mapEvent_ = function _mapEvent_(name) {
-    // because the signatures vary we need specific methods
-    this.$el.on(name, this[this.eventMap[name]].bind(this));
-};
-// ###_objectForPath_
-// The objects used for callbacks and connections need to be
-// looked-up via a key-path like address as they likely will not exist
-// when viewController's are instantiated.
-// `private`
-sudo.ViewController.prototype._objectForPath_ = function _objectForPath_(path) {
-  return sudo.getPath(path, window);
-};
-// Virtual methods to override in your child classes for
-// any events you chose to listen for
-sudo.ViewController.prototype.onAjaxAbortedFile = $.noop;
-sudo.ViewController.prototype.onAjaxAbortedRequired = $.noop;
-sudo.ViewController.prototype.onAjaxBefore = $.noop;
-sudo.ViewController.prototype.onAjaxBeforeSend = $.noop;
-sudo.ViewController.prototype.onAjaxComplete = $.noop;
-sudo.ViewController.prototype.onAjaxSuccess = $.noop;
-sudo.ViewController.prototype.onAjaxError = $.noop;
-// `private`
-sudo.ViewController.prototype.role = 'viewController';
 // ###Templating
 
 // Allow the default {{ js code }}, {{= key }}, and {{- escape stuff }} 
@@ -925,7 +801,7 @@ sudo.DataView.prototype.addedToParent = function(parent) {
 // there may not be yet as some get added later by a ViewController
 sudo.DataView.prototype.build = function build() {
   var t;
-  if(!(t = this.model.data.template)) return;
+  if(!(t = this.model.data.template)) return this;
   if(typeof t === 'string') t = sudo.template(t);
   this.$el.html(t(this.model.data));
   this.built = true;
@@ -1387,165 +1263,6 @@ sudo.extensions.observable = {
     return this.deliverChangeRecords();	
   }
 };
-// ##Bindable Extension Object
-
-// Bindable methods allow various properties and attributes of
-// a sudo Class Object to be synchronized with the data contained
-// in a changeRecord recieved via observe().
-//
-// `namespace`
-sudo.extensions.bindable = {
-  // List of attributes - $.attr() to be used.
-  //
-  // `private`
-  _attr_: {
-    accesskey: true,
-    align: true,
-    alt: true,
-    contenteditable: true,
-    draggable: true,
-    href: true,
-    label: true,
-    name: true,
-    rel: true,
-    src: true,
-    tabindex: true,
-    title: true
-  },
-  // Some bindings defer to jQuery.css() to be bound.
-  //
-  // `private`
-  _css_: {
-    display: true,
-    visibility: true
-  },
-  // ###_handleAttr_
-  // bind the jQuery prop() method to this object, now exposed
-  // by this name, matching passed `bindings` arguments.
-  //
-  // `param` {string} `meth` The name of the method to be bound
-  // `returns` {Object} `this`
-  // `private`
-  _handleAttr_: function _handleAttr_(meth) {
-    this[meth] = function(obj) {
-      if(obj.name === meth) this.$el.attr(meth, obj.object[obj.name]);
-      return this;
-    };
-    return this;
-  },
-  // ###_handleCss_
-  // bind the jQuery css() method to this object, now exposed
-  // by this name, matching passed `bindings` arguments.
-  //
-  // `param` {string} `meth` The name of the method to be bound
-  // `returns` {Object} `this`
-  // `private`
-  _handleCss_: function _handleCss_(meth) {
-    this[meth] = function(obj) {
-      if(obj.name === meth) this.$el.css(meth, obj.object[obj.name]);
-      return this;
-    };
-    return this;
-  },
-  // ###_handleData_
-  // bind the jQuery data() method to this object, now exposed
-  // by this name, matching passed `bindings` arguments.
-  //
-  // `param` {string} `meth` The name of the method to be bound
-  // `returns` {Object} `this`
-  // `private`
-  _handleData_: function _handleData_(meth) {
-    this[meth] = function(obj) {
-      if(obj.name === meth) {
-        this.$el.data(obj.object[obj.name].key, obj.object[obj.name].value);
-        return this;
-      }
-    };
-    return this;
-  },
-  // ###_handleProp_
-  // bind the jQuery attr() method to this object, now exposed
-  // by this name, matching passed `bindings` arguments.
-  //
-  // NOTE: If more than 1 data-* attribute is desired you must
-  // set those up manually as <obj>.data({..}) is what will be
-  // constructed via this method.
-  //
-  // `param` {string} `meth` The name of the method to be bound.
-  // `returns` {Object} `this`
-  // `private`
-  _handleProp_: function _handleProp_(meth) {
-    this[meth] = function(obj) {
-      if(obj.name === meth) this.$el.prop(meth, obj.object[obj.name]);
-      return this;
-    };
-    return this;
-  },
-  // ###_handleSpec_
-  // bind the jQuery shorthand methods to this object matching
-  // passed `bindings` arguments.
-  //
-  // `param` {string} `meth` The name of the method to be bound.
-  // `returns` {Object} `this`
-  // `private`
-  _handleSpec_: function _handleSpec_(meth) {
-    this[meth] = function(obj) {
-      if(obj.name === meth) this.$el[meth](obj.object[obj.name]);
-      return this;
-    };
-    return this;
-  },
-  // List of properties - $.prop() to be used.
-  //
-  // `private`
-  _prop_: {
-    checked: true,
-    defaultValue: true,
-    disabled: true,
-    location: true,
-    multiple: true,
-    readOnly: true,
-    selected: true
-  },
-  // ###_setBinding_
-  // Given a single explicit binding, create it. Called from
-  // _setbindings_ as a convenience for normalizing the
-  // single vs. multiple bindings scenario
-  //
-  // `param` {string} `b` The binding.
-  // `private`
-  _setBinding_: function _setBinding_(b) {
-    if(b in this._spec_) return this[this._spec_[b]](b);
-    if(b in this._css_) return this._handleCss_(b);
-    if(b in this._attr_) return this._handleAttr_(b);
-    if(b in this._prop_) return this._handleProp_(b);
-  },
-  // ###setBindings
-  // Inspect the binding (in the single-bound use case), or the 
-  // bindings Array in this Object's data store and
-  // create the bound functions expected.
-  //
-  // `returns` {Object} `this`
-  setBindings: function setBindings() {
-    var d = this.model.data, b, i;
-    // handle the single binding use case
-    if((b = d.binding)) return this._setBinding_(b);
-    if(!(b = d.bindings)) return this;
-    for(i = 0; i < b.length; i++) {
-      this._setBinding_(b[i]);
-    }
-    return this;
-  },
-  // `Special` binding cases. jQuery shorthand methods to be used.
-  //
-  // `private`
-  _spec_: {
-    data: '_handleData_',
-    html: '_handleSpec_',
-    text: '_handleSpec_',
-    val: '_handleSpec_'
-  }
-};
 // ##Listener Extension Object
 
 // Handles event binding/unbinding via an events array in the form:
@@ -1644,7 +1361,7 @@ sudo.extensions.persistable = {
   // state of the model on the server and set it here (via a success callback).
   //
   // `param` {object} `params` Hash of options for the XHR call
-  // `returns` {object} The jQuery XHR object
+  // `returns` {object} The XHR object
   create: function create(params) {
     return this._sendData_('POST', params);
   },
@@ -1653,7 +1370,7 @@ sudo.extensions.persistable = {
   // Delete this model on the server
   //
   // `param` {object} `params` Optional hash of options for the XHR
-  // `returns` {object} jqXhr
+  // `returns` {object} Xhr
   destroy: function destroy(params) {
     return this._sendData_('DELETE', params);
   },
@@ -1670,10 +1387,15 @@ sudo.extensions.persistable = {
     opts.url || (opts.url = this.url(opts.baseUrl));
     opts.type || (opts.type = meth);
     opts.dataType || (opts.dataType = 'json');
+    var isJson = opts.dataType === 'json';
+    // by default turn off the global ajax triggers as all data
+    // should flow thru the models to their observers
+    opts.global || (opts.global = false);
     // the default success callback is to set the data returned from the server
     // or just the status as `ajaxStatus` if no data was returned
-    opts.success || (opts.success = function(data, status, jqXhr) {
-      data ? this.sets(data) : this.set('ajaxStatus', status);
+    opts.success || (opts.success = function(data, status, xhr) {
+      data ? this.sets((isJson && typeof data === 'string') ? JSON.parse(data) : data) : 
+        this.set('ajaxStatus', status);
     }.bind(this));
     // allow the passed in params to override any set in this model's `ajax` options
     return params ? $.extend(opts, params) : opts;
@@ -1689,7 +1411,7 @@ sudo.extensions.persistable = {
   //
   // `param` {object} `params`. Optional info for the XHR call. If
   // present will override any set in this model's `ajax` options object.
-  // `returns` {object} The jQuery XHR object
+  // `returns` {object} The XHR object
   read: function read(params) {
     return $.ajax(this._normalizeParams_('GET', null, params));
   },
@@ -1699,7 +1421,7 @@ sudo.extensions.persistable = {
   // or has been loaded/refreshed from the server. 
   //
   // `param` {object} `params` Hash of options for the XHR call
-  // `returns` {object} The jQuery XHR object
+  // `returns` {object} The XHR object
   save: function save(params) {
     return ('id' in this.data) ? this.update(params) : this.create(params);
   },
@@ -1707,11 +1429,15 @@ sudo.extensions.persistable = {
   // The Create, Update and Patch methods all send data to the server,
   // varying only in their HTTP method. Abstracted logic is here.
   //
-  // `returns` {object} jqXhr
+  // `returns` {object} Xhr
   _sendData_: function _sendData_(meth, params) {
     opts = $.extend({}, this.data.ajax);
     opts.contentType || (opts.contentType = 'application/json');
     opts.data || (opts.data = this.data);
+    // assure that, in the default json case, opts.data is json
+    if(opts.contentType === 'application/json' && (typeof opts.data !== 'string')) {
+      opts.data = JSON.stringify(opts.data); 
+    }
     // non GET requests do not 'processData'
     if(!('processData' in opts)) opts.processData = false;
     return $.ajax(this._normalizeParams_(meth, opts, params));
@@ -1727,7 +1453,7 @@ sudo.extensions.persistable = {
   // or use the `save()` method (that does check).
   //
   // `param` {object} `params` Optional hash of options for the XHR
-  // `returns` {object|bool} the jqXhr if called false if not
+  // `returns` {object|bool} the Xhr if called false if not
   update: function update(params) {
     return this._sendData_((this.data.ajax.patch || params && params.patch) ? 
       'PATCH' : 'PUT', params);

@@ -5,10 +5,9 @@ var $ = require('sudoclass'),
 /**
  * The loop in which we do stuff...
  */
-var Builder = function(filename, v, pf) {
+var Builder = function(filename, pf) {
   this.construct({
     filename: filename,
-    version: v,
     pathfinder: pf
   });
 };
@@ -30,7 +29,7 @@ Builder.prototype.build = function() {
 // the reader has finished parsing the script links
 Builder.prototype.readerScriptsParsed = function(change) {
   if(change.name === 'scripts_parsed' && change.object[change.name]) {
-    var version = 'sudo.version = "' + this.get('version') + '";\n';
+    var version = 'sudo.version = "' + change.object.version + '";\n';
     console.log(" - concatonating all scripts to a single `String`");
     this.FR.concatonateSources();
     // the writer

@@ -181,7 +181,7 @@ sudo.Container.prototype.send = function send(/*args*/) {
   else if(typeof args[0] === 'string') meth = args.shift();
   // less common but viable options
   if(!meth) {
-    // passed as a jquery custom data attr bound in events
+    // passed as a custom data attr bound in events
     meth = 'data' in args[0] ? args[0].data.sendMethod :
       // passed in a hash from something or not passed at all
       args[0].sendMethod || void 0;

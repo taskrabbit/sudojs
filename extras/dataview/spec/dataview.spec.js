@@ -98,7 +98,7 @@ describe('sudo.js Dataview Object', function() {
     dv.$el.empty().remove();
     expect($('#testTarget').html()).toBeFalsy();
 
-    var vc = new sudo.ViewController('#testTarget');
+    var vc = new sudo.View('#testTarget');
 
     dv.model.set('renderTarget', vc.$el);
     vc.addChild(dv);
