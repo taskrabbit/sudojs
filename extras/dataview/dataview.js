@@ -47,7 +47,7 @@ sudo.DataView.prototype.addedToParent = function(parent) {
 // there may not be yet as some get added later by a ViewController
 sudo.DataView.prototype.build = function build() {
   var t;
-  if(!(t = this.model.data.template)) return;
+  if(!(t = this.model.data.template)) return this;
   if(typeof t === 'string') t = sudo.template(t);
   this.$el.html(t(this.model.data));
   this.built = true;
