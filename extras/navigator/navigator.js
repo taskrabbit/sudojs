@@ -22,9 +22,9 @@ sudo.Navigator.prototype = Object.create(sudo.Model.prototype);
 sudo.Navigator.prototype.getFragment = function getFragment(fragment) {
   var root = this.data.root;
   if(!fragment) {
-      // intentional use of coersion
+    // intentional use of coersion
     if (this.isPushState) {
-      fragment = window.location.pathname + window.location.search + window.location.hash;
+      fragment = window.location.pathname;
       root = root.replace(this.trailingStripper, '');
       if(!fragment.indexOf(root)) fragment = fragment.substr(root.length);
     } else {
@@ -182,6 +182,8 @@ sudo.Navigator.prototype.urlChanged = function urlChanged(fragment) {
   // nothing has changed
   if (current === this.data.fragment) return false;
   this.data.fragment = current;
-  this.data.query = this.getSearch(current) || this.getHash(current);
+  // the fragment and the href need to checked here
+  this.data.query = (this.getSearch(current) || this.getSearch()) || 
+    (this.getHash(current) || this.getHash());
   return true;
 };
