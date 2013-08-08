@@ -182,7 +182,7 @@ sudo.Navigator.prototype.urlChanged = function urlChanged(fragment) {
   // nothing has changed
   if (current === this.data.fragment) return false;
   this.data.fragment = current;
-  // the fragment and the href need to checked here
+  // the fragment and the href need to checked here, optimized for the 'go' scenario
   this.data.query = (this.getSearch(current) || this.getSearch()) || 
     (this.getHash(current) || this.getHash());
   return true;

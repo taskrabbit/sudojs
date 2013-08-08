@@ -68,10 +68,7 @@ describe('Sudo Navigator Class -- PushState', function() {
   it('should parse query string', function() {
     var $a = nav.start(anchor);
     expect(nav.get('query')).toEqual('query=someQuery');
-    expect(nav.get('/')).toEqual({query: 'someQuery'});
   });
-
-
 
 });
 
