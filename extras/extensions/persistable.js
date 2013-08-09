@@ -131,6 +131,7 @@ sudo.extensions.persistable = {
   //
   // `param` {string} `base` the baseUrl set in this models ajax options
   url: function url(base) {
+    if(!base) return void 0;
     // could possibly be 0...
     if('id' in this.data) {
       return base + (base.charAt(base.length - 1) === '/' ? 
