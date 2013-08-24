@@ -28,6 +28,9 @@ describe('sudo.js Dataview Object', function() {
       '</div>'
   });
 
+  // autoRender Dataview wont do much til added
+  dv.addedToParent();
+
   it('!exists with the inner content', function() {
     expect(dv.$el.html()).toBeFalsy();
   });

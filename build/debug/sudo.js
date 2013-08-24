@@ -770,16 +770,14 @@ sudo.DataView = function(el, data) {
   sudo.View.call(this, el, data);
   // implements the listener extension
   $.extend(this, sudo.extensions.listener);
-  // dataview's models are observable, make it so if not already
-  if(!this.model.observe) $.extend(this.model, sudo.extensions.observable);
-  // dont autoRender on the setting of events,
-  // add to this to prevent others if needed
-  this.autoRenderBlacklist = {event: true, events: true};
-  // if autorendering, observe your own model
-  // use this ref to unobserve if desired
-  if(this.model.data.autoRender) this.observer = this.model.observe(this.render.bind(this));
-  // only call the initial build if not an autoRender type
-  else this.build();
+  if(this.model.data.autoRender) {
+    // dont autoRender on the setting of events,
+    this.autoRenderBlacklist = {event: true, events: true};
+    // autoRender types observe their own model
+    if(!this.model.observe) $.extend(this.model, sudo.extensions.observable);
+    // you may need to override `build` if you provide a template and the data
+    // isnt hydrated (as that is the expectation)
+  } else this.build();
   if(this.role === 'dataview') this.init();
 };
 // `private`
@@ -790,8 +788,10 @@ sudo.inherit(sudo.View, sudo.DataView);
 // if not an autoRender (which will render on model change), as well as setup the events (in children too)
 sudo.DataView.prototype.addedToParent = function(parent) {
   this.bindEvents();
-  // autoRender Dataviews should only render on model change
+  // non-autoRender types should render now
   if(!this.model.data.autoRender) return this.render();
+  // autoRender Dataviews should only render on model change
+  else this.observer = this.model.observe(this.render.bind(this));
   return this;
 };
 // ###build
@@ -819,6 +819,8 @@ sudo.DataView.prototype.build = function build() {
 sudo.DataView.prototype.removeFromParent = function removeFromParent(keep) {
   this.parent.removeChild(this);
   this.unbindEvents().$el[keep ? 'detach' : 'remove']();
+  // in the case that this.model is 'foreign'
+  if(this.observer) this.model.unobserve(this.observer);
   return this;
 };
 // ###render
@@ -833,15 +835,14 @@ sudo.DataView.prototype.removeFromParent = function removeFromParent(keep) {
 //
 // `returns` {Object} `this`
 sudo.DataView.prototype.render = function render(change) {
-  var d;
   // return early if a `blacklisted` key is set to my model
   if(change && this.autoRenderBlacklist[change.name]) return this;
-  d = this.model.data;
   // has `build` been executed already? If not call it again
   if(!this.built) this.build();
   // if there is no template by this point *you are doing it wrong*
   // erase the flag
   else this.built = false;
+  d = this.model.data;
   if(d.renderTarget) {
     this._normalizedEl_(d.renderTarget)[d.renderMethod || 'append'](this.$el);
     delete d.renderTarget;
@@ -1468,6 +1469,7 @@ sudo.extensions.persistable = {
   //
   // `param` {string} `base` the baseUrl set in this models ajax options
   url: function url(base) {
+    if(!base) return void 0;
     // could possibly be 0...
     if('id' in this.data) {
       return base + (base.charAt(base.length - 1) === '/' ? 
