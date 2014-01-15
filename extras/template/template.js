@@ -1,15 +1,16 @@
 // ###Templating
 
-// Allow the default {{ js code }}, {{= key }}, and {{- escape stuff }} 
+// Allow the default {{ js code }}, {{= key }}, {{- escape stuff }}, and {{{= raw content }}}
 // micro templating delimiters to be overridden if desired
 //
 // `type` {Object}
 sudo.templateSettings = {
   evaluate: /\{\{([\s\S]+?)\}\}/g,
   interpolate: /\{\{=([\s\S]+?)\}\}/g,
-  escape: /\{\{-([\s\S]+?)\}\}/g
+  escape: /\{\{-([\s\S]+?)\}\}/g,
+  raw: /\{\{\{=([\s\S]+?)\}\}\}/g
 };
-// Certain characters need to be escaped so that they can be put 
+// Certain characters need to be escaped so that they can be put
 // into a string literal when templating.
 //
 // `type` {Object}
@@ -86,6 +87,8 @@ sudo.template = function template(str, data, scope) {
     return '\\' + sudo.escapes[match];
   }).replace(settings.escape, function(match, code) {
     return "'+\n((_t=(" + sudo.unescape(code) + "))==null?'':sudo.escape(_t))+\n'";
+  }).replace(settings.raw, function(match, code) {
+    return "'+\n((_t=(" + code + "))==null?'':_t)+\n'";
   }).replace(settings.interpolate, function(match, code) {
     return "'+\n((_t=(" + sudo.unescape(code) + "))==null?'':_t)+\n'";
   }).replace(settings.evaluate, function(match, code) {
